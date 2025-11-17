@@ -1,124 +1,315 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MapReduce Web - Static Version</title>
+    <title>MapReduce Analytics - Modern Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles/style.css">
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="fas fa-project-diagram"></i> MapReduce Web
+                <i class="fas fa-project-diagram me-2"></i>
+                <span class="brand-text">MapReduce Analytics</span>
             </a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="word-count.html">Word Count</a>
-                <a class="nav-link" href="average.html">Average</a>
-                <a class="nav-link" href="sales.html">Sales</a>
-                <a class="nav-link" href="chat.html">Chat</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link active" href="index.html">
+                        <i class="fas fa-home me-1"></i>Dashboard
+                    </a>
+                    <a class="nav-link" href="word-count.html">
+                        <i class="fas fa-font me-1"></i>Word Count
+                    </a>
+                    <a class="nav-link" href="average.html">
+                        <i class="fas fa-calculator me-1"></i>Average
+                    </a>
+                    <a class="nav-link" href="sales.html">
+                        <i class="fas fa-chart-line me-1"></i>Sales
+                    </a>
+                    <a class="nav-link" href="chat.html">
+                        <i class="fas fa-comments me-1"></i>Chat
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-12 text-center mb-5">
-                <h1 class="display-4 text-primary">
-                    <i class="fas fa-project-diagram"></i> MapReduce Web
-                </h1>
-                <p class="lead">Implementasi MapReduce dalam Browser - Pure JavaScript</p>
+    <!-- Hero Section -->
+    <section class="hero-section enhanced-hero">
+        <div class="hero-overlay"></div>
+
+        <div class="container text-center hero-content">
+            <h1 class="hero-title enhanced-hero-title">
+                <i class="fas fa-project-diagram me-3"></i>
+                MapReduce Analytics
+            </h1>
+
+            <p class="hero-subtitle enhanced-hero-subtitle">
+                Website untuk Melakukan Proses Map Reduce – BIG DATA
+            </p>
+
+            <!-- Team Badges -->
+            <div class="team-badges mt-4">
+                <span class="hero-badge team-badge"><i class="fas fa-user me-1"></i>Erlangga Yuda Pratama</span>
+                <span class="hero-badge team-badge"><i class="fas fa-user me-1"></i>SHULA KHALID MAULIAWAN</span>
+                <span class="hero-badge team-badge"><i class="fas fa-user me-1"></i>Ikhsan Dwiputra</span>
+                <span class="hero-badge team-badge"><i class="fas fa-user me-1"></i>Muhamad Sauzan Rizki Asakir</span>
             </div>
+
+            <!-- Hero CTA -->
+            <!-- <div class="hero-cta mt-5">
+                <a href="#apps" class="btn hero-btn">
+                    Mulai Analisis <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div> -->
         </div>
+    </section>
 
-        <div class="row">
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 shadow">
-                    <div class="card-body text-center">
-                        <i class="fas fa-font fa-3x text-primary mb-3"></i>
-                        <h5 class="card-title">Word Count</h5>
-                        <p class="card-text">Hitung frekuensi kata dalam teks</p>
-                        <a href="word-count.html" class="btn btn-primary">Buka</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 shadow">
-                    <div class="card-body text-center">
-                        <i class="fas fa-calculator fa-3x text-success mb-3"></i>
-                        <h5 class="card-title">Average Calculator</h5>
-                        <p class="card-text">Hitung rata-rata nilai</p>
-                        <a href="average.html" class="btn btn-success">Buka</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 shadow">
-                    <div class="card-body text-center">
-                        <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
-                        <h5 class="card-title">Sales Analyzer</h5>
-                        <p class="card-text">Analisis data penjualan</p>
-                        <a href="sales.html" class="btn btn-warning">Buka</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 shadow">
-                    <div class="card-body text-center">
-                        <i class="fas fa-comments fa-3x text-info mb-3"></i>
-                        <h5 class="card-title">Chat Analyzer</h5>
-                        <p class="card-text">Analisis statistik chat</p>
-                        <a href="chat.html" class="btn btn-info">Buka</a>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="row mt-5">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Tentang Aplikasi Ini</h5>
-                    </div>
-                    <div class="card-body">
-                        <p><strong>Static Version</strong> - Aplikasi ini berjalan sepenuhnya di browser Anda tanpa membutuhkan server backend. Semua proses MapReduce dilakukan menggunakan JavaScript murni.</p>
-                        
-                        <div class="alert alert-info">
-                            <i class="fas fa-cloud-upload-alt"></i> <strong>Netlify Ready:</strong> Aplikasi ini dapat dihosting gratis di Netlify!
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <h6><i class="fas fa-map-marked-alt text-primary"></i> Map Phase</h6>
-                                <p>Memproses input data dan menghasilkan key-value pairs</p>
-                            </div>
-                            <div class="col-md-4">
-                                <h6><i class="fas fa-random text-warning"></i> Shuffle Phase</h6>
-                                <p>Mengelompokkan data berdasarkan key</p>
-                            </div>
-                            <div class="col-md-4">
-                                <h6><i class="fas fa-redo text-success"></i> Reduce Phase</h6>
-                                <p>Mengolah data yang telah dikelompokkan</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <footer class="bg-light text-center py-3 mt-5">
+    <!-- Applications Grid -->
+    <section class="applications-section">
         <div class="container">
-            <p class="mb-0">MapReduce Web Application &copy; 2024 - Static Version (Netlify Compatible)</p>
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="section-title">Pilih Aplikasi MapReduce</h2>
+                    <p class="section-subtitle">Pilih salah satu aplikasi untuk memulai analisis data</p>
+                </div>
+            </div>
+
+            <div class="app-grid">
+                <!-- Word Count Card -->
+                <div class="app-card">
+                    <div class="app-icon">
+                        <i class="fas fa-font"></i>
+                    </div>
+                    <h3 class="app-title">Word Count</h3>
+                    <p class="app-description">
+                        Hitung frekuensi kata dalam teks menggunakan algoritma MapReduce. Analisis teks dan temukan kata
+                        yang paling sering muncul.
+                    </p>
+                    <div class="app-features">
+                        <span class="feature-tag">Text Analysis</span>
+                        <span class="feature-tag">Frequency</span>
+                        <span class="feature-tag">Visualization</span>
+                    </div>
+                    <a href="word-count.html" class="app-link">
+                        <span>Buka Aplikasi</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Average Calculator Card -->
+                <div class="app-card">
+                    <div class="app-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3 class="app-title">Average Calculator</h3>
+                    <p class="app-description">
+                        Hitung nilai rata-rata dari kumpulan data numerik. Dukungan input manual dan batch processing.
+                    </p>
+                    <div class="app-features">
+                        <span class="feature-tag">Numeric</span>
+                        <span class="feature-tag">Statistics</span>
+                        <span class="feature-tag">Math</span>
+                    </div>
+                    <a href="average.html" class="app-link">
+                        <span>Buka Aplikasi</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Sales Analyzer Card -->
+                <div class="app-card">
+                    <div class="app-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="app-title">Sales Analyzer</h3>
+                    <p class="app-description">
+                        Analisis data penjualan dan laporan performa bisnis. Visualisasi trend dan performa produk.
+                    </p>
+                    <div class="app-features">
+                        <span class="feature-tag">Business</span>
+                        <span class="feature-tag">Analytics</span>
+                        <span class="feature-tag">Charts</span>
+                    </div>
+                    <a href="sales.html" class="app-link">
+                        <span>Buka Aplikasi</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Chat Analyzer Card -->
+                <div class="app-card">
+                    <div class="app-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3 class="app-title">Chat Analyzer</h3>
+                    <p class="app-description">
+                        Analisis statistik percakapan dan pola komunikasi. Identifikasi topik dan aktivitas pengguna.
+                    </p>
+                    <div class="app-features">
+                        <span class="feature-tag">Social</span>
+                        <span class="feature-tag">Patterns</span>
+                        <span class="feature-tag">Insights</span>
+                    </div>
+                    <a href="chat.html" class="app-link">
+                        <span>Buka Aplikasi</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="section-title">Cara Kerja MapReduce</h2>
+                    <p class="section-subtitle">Memproses data besar dengan efisien dalam tiga fase utama</p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon map">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h4 class="feature-title">Map Phase</h4>
+                        <p class="feature-description">
+                            Memproses input data dan menghasilkan pasangan key-value. Setiap mapper bekerja secara
+                            independen pada bagian data yang berbeda.
+                        </p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>Parallel Processing</li>
+                            <li><i class="fas fa-check"></i>Key-Value Generation</li>
+                            <li><i class="fas fa-check"></i>Data Transformation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon shuffle">
+                            <i class="fas fa-random"></i>
+                        </div>
+                        <h4 class="feature-title">Shuffle Phase</h4>
+                        <p class="feature-description">
+                            Mengelompokkan dan mengurutkan data berdasarkan kunci. Mengumpulkan semua nilai yang terkait
+                            dengan kunci yang sama.
+                        </p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>Data Grouping</li>
+                            <li><i class="fas fa-check"></i>Key Sorting</li>
+                            <li><i class="fas fa-check"></i>Data Organization</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon reduce">
+                            <i class="fas fa-redo"></i>
+                        </div>
+                        <h4 class="feature-title">Reduce Phase</h4>
+                        <p class="feature-description">
+                            Mengolah data yang telah dikelompokkan untuk menghasilkan output akhir. Melakukan agregasi
+                            dan perhitungan final.
+                        </p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i>Data Aggregation</li>
+                            <li><i class="fas fa-check"></i>Final Computation</li>
+                            <li><i class="fas fa-check"></i>Result Generation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Info Section -->
+    <section class="info-section">
+        <div class="container">
+            <div class="info-card">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h3 class="info-title">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Tentang Aplikasi Ini
+                        </h3>
+                        <p class="info-text">
+                            <strong>Static Modern Version</strong> - Aplikasi ini berjalan sepenuhnya di browser Anda
+                            tanpa membutuhkan server backend. Semua proses MapReduce dilakukan menggunakan JavaScript
+                            murni
+                            dengan antarmuka yang modern dan responsif.
+                        </p>
+                        <div class="tech-stack">
+                            <span class="tech-item">
+                                <i class="fab fa-html5"></i> HTML5
+                            </span>
+                            <span class="tech-item">
+                                <i class="fab fa-css3-alt"></i> CSS3
+                            </span>
+                            <span class="tech-item">
+                                <i class="fab fa-js-square"></i> JavaScript
+                            </span>
+                            <span class="tech-item">
+                                <i class="fab fa-bootstrap"></i> Bootstrap 5
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 text-center">
+                        <div class="deployment-badge">
+                            <i class="fab fa-netlify fa-3x mb-3"></i>
+                            <h5>Netlify Ready</h5>
+                            <p class="small">Deploy dengan satu klik</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="footer-text">
+                        <i class="fas fa-project-diagram me-2"></i>
+                        MapReduce Analytics &copy; 2024 - Modern Static Version
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="footer-links">
+                        <a href="#" class="footer-link">
+                            <i class="fas fa-code"></i> Source
+                        </a>
+                        <a href="#" class="footer-link">
+                            <i class="fas fa-book"></i> Docs
+                        </a>
+                        <a href="#" class="footer-link">
+                            <i class="fas fa-envelope"></i> Contact
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/mapreduce.js"></script>
 </body>
+
 </html>

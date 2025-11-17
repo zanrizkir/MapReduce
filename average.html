@@ -1,287 +1,260 @@
-{% extends "base.html" %}
-
-{% block title %}Average Calculator - MapReduce Web{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-12">
-        <h2><i class="fas fa-calculator"></i> Average Calculator</h2>
-        <p class="text-muted">Hitung rata-rata nilai menggunakan MapReduce</p>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-edit"></i> Input Data Nilai</h5>
-            </div>
-            <div class="card-body">
-                <form id="averageForm">
-                    <div class="mb-3">
-                        <label for="dataInput" class="form-label">Masukkan Data Nilai:</label>
-                        <textarea class="form-control" id="dataInput" rows="12" 
-                                  placeholder="Format: Nama,MataPelajaran,Nilai&#10;Contoh:&#10;Andi,Matematika,85&#10;Budi,Matematika,90&#10;Sari,Matematika,78"></textarea>
-                        <div class="form-text">
-                            Format: Nama, Mata Pelajaran, Nilai (dipisahkan koma)
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-success" id="processBtn">
-                        <i class="fas fa-play"></i> Proses MapReduce
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="loadExample()">
-                        <i class="fas fa-file-alt"></i> Load Contoh
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div id="resultsSection" style="display: none;">
-            <div class="card shadow mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Rata-rata</h5>
-                </div>
-                <div class="card-body">
-                    <div id="summary" class="mb-3"></div>
-                    <div class="table-responsive">
-                        <table class="table table-striped" id="resultsTable">
-                            <thead>
-                                <tr>
-                                    <th>Mata Pelajaran</th>
-                                    <th>Rata-rata</th>
-                                    <th>Jumlah Data</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card shadow">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Visualisasi</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="averageChart" width="400" height="200"></canvas>
-                </div>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Average Calculator - MapReduce Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-project-diagram me-2"></i>
+                <span class="brand-text">MapReduce Analytics</span>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-home me-1"></i>Dashboard
+                </a>
+                <a class="nav-link" href="word-count.html">
+                    <i class="fas fa-font me-1"></i>Word Count
+                </a>
+                <a class="nav-link active" href="average.html">
+                    <i class="fas fa-calculator me-1"></i>Average
+                </a>
+                <a class="nav-link" href="sales.html">
+                    <i class="fas fa-chart-line me-1"></i>Sales
+                </a>
+                <a class="nav-link" href="chat.html">
+                    <i class="fas fa-comments me-1"></i>Chat
+                </a>
             </div>
         </div>
-        
-        <div id="processSteps" style="display: none;" class="mt-4">
-            <div class="card shadow">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Proses MapReduce</h5>
-                </div>
-                <div class="card-body">
-                    <div class="accordion" id="processAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mapPhase">
-                                    <i class="fas fa-map-marked-alt me-2"></i>Map Phase
-                                </button>
-                            </h2>
-                            <div id="mapPhase" class="accordion-collapse collapse show" data-bs-parent="#processAccordion">
-                                <div class="accordion-body">
-                                    <div id="mapResults" class="process-output"></div>
-                                </div>
+    </nav>
+
+    <div class="average-container">
+        <!-- Header -->
+        <div class="average-header">
+            <h1 class="average-title">
+                <i class="fas fa-calculator me-3"></i>
+                Average Calculator
+            </h1>
+            <p class="average-subtitle">Hitung nilai rata-rata menggunakan algoritma MapReduce</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Input Methods -->
+            <div class="col-lg-6">
+                <div class="input-methods">
+                    <!-- Text Input Method -->
+                    <div class="method-card active" id="textMethod">
+                        <div class="method-header">
+                            <div class="method-icon">
+                                <i class="fas fa-font"></i>
+                            </div>
+                            <div class="method-info">
+                                <h3>Input Teks</h3>
+                                <p>Masukkan data dalam format teks</p>
                             </div>
                         </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shufflePhase">
-                                    <i class="fas fa-random me-2"></i>Shuffle Phase
-                                </button>
-                            </h2>
-                            <div id="shufflePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
-                                <div class="accordion-body">
-                                    <div id="shuffleResults" class="process-output"></div>
-                                </div>
+                        <div class="data-input">
+                            <label class="form-label">Data Numerik (satu per baris):</label>
+                            <textarea class="data-textarea" id="textData" rows="8" placeholder="Masukkan angka, satu per baris...">85
+92
+78
+65
+88
+76
+90
+82
+79
+85
+91
+87
+83
+89
+84</textarea>
+                            <div class="data-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Format: Satu angka per baris
                             </div>
                         </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reducePhase">
-                                    <i class="fas fa-redo me-2"></i>Reduce Phase
-                                </button>
-                            </h2>
-                            <div id="reducePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
-                                <div class="accordion-body">
-                                    <div id="reduceResults" class="process-output"></div>
-                                </div>
+                        <button class="btn-process" onclick="processTextData()">
+                            <i class="fas fa-calculator"></i>
+                            Hitung Rata-rata
+                        </button>
+                    </div>
+
+                    <!-- Manual Input Method -->
+                    <div class="method-card" id="manualMethod">
+                        <div class="method-header">
+                            <div class="method-icon">
+                                <i class="fas fa-mouse-pointer"></i>
                             </div>
+                            <div class="method-info">
+                                <h3>Input Manual</h3>
+                                <p>Tambah angka satu per satu</p>
+                            </div>
+                        </div>
+                        <div class="manual-input">
+                            <input type="number" class="number-input" id="numberInput" placeholder="Masukkan angka...">
+                            <button class="add-btn" onclick="addNumber()">
+                                <i class="fas fa-plus"></i>
+                                Tambah
+                            </button>
+                        </div>
+                        <div class="numbers-list" id="numbersList">
+                            <!-- Numbers will be added here -->
+                        </div>
+                        <button class="btn-process" onclick="processManualData()">
+                            <i class="fas fa-calculator"></i>
+                            Hitung Rata-rata
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Process Steps -->
+                <div id="processSteps" class="process-section" style="display: none;">
+                    <h3 class="section-title">
+                        <i class="fas fa-cogs"></i>
+                        Proses MapReduce
+                    </h3>
+                    
+                    <div class="process-phase">
+                        <div class="phase-header active" onclick="togglePhase('mapPhase')">
+                            <div class="phase-icon">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <div class="phase-info">
+                                <h5 class="phase-title">Map Phase</h5>
+                                <p class="phase-description">Memproses setiap angka</p>
+                            </div>
+                            <div class="phase-indicator">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div id="mapPhase" class="phase-content show">
+                            <div id="mapResults" class="process-output"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="process-phase">
+                        <div class="phase-header" onclick="togglePhase('shufflePhase')">
+                            <div class="phase-icon">
+                                <i class="fas fa-random"></i>
+                            </div>
+                            <div class="phase-info">
+                                <h5 class="phase-title">Shuffle Phase</h5>
+                                <p class="phase-description">Mengelompokkan data</p>
+                            </div>
+                            <div class="phase-indicator">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div id="shufflePhase" class="phase-content">
+                            <div id="shuffleResults" class="process-output"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="process-phase">
+                        <div class="phase-header" onclick="togglePhase('reducePhase')">
+                            <div class="phase-icon">
+                                <i class="fas fa-redo"></i>
+                            </div>
+                            <div class="phase-info">
+                                <h5 class="phase-title">Reduce Phase</h5>
+                                <p class="phase-description">Menghitung hasil akhir</p>
+                            </div>
+                            <div class="phase-indicator">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div id="reducePhase" class="phase-content">
+                            <div id="reduceResults" class="process-output"></div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="initialState" class="text-center text-muted mt-5">
-            <i class="fas fa-calculator fa-4x mb-3"></i>
-            <h5>Belum ada data yang diproses</h5>
-            <p>Masukkan data nilai di sebelah kiri dan klik "Proses MapReduce" untuk melihat hasil</p>
+            <!-- Results Section -->
+            <div class="col-lg-6">
+                <div id="resultsSection" class="results-section" style="display: none;">
+                    <!-- Results Display -->
+                    <div class="results-display">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Hasil Perhitungan
+                        </h3>
+                        
+                        <div class="results-grid" id="resultsGrid">
+                            <!-- Results will be populated here -->
+                        </div>
+
+                        <div class="stats-details">
+                            <h4>
+                                <i class="fas fa-info-circle me-2"></i>
+                                Detail Statistik
+                            </h4>
+                            <div class="stats-list" id="statsList">
+                                <!-- Stats will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualization -->
+                    <div class="process-visualization">
+                        <h3 class="visualization-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Visualisasi Data
+                        </h3>
+                        <div class="chart-wrapper">
+                            <canvas id="dataChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Initial State -->
+                <div id="initialState" class="initial-state">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <h4 class="empty-title">Belum ada data yang diproses</h4>
+                        <p class="empty-description">
+                            Pilih metode input di sebelah kiri dan klik "Hitung Rata-rata" untuk melihat hasil
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-function loadExample() {
-    document.getElementById('dataInput').value = `Andi,Matematika,85
-Budi,Matematika,90
-Sari,Matematika,78
-Andi,Fisika,88
-Budi,Fisika,92
-Sari,Fisika,85
-Andi,Kimia,76
-Budi,Kimia,85
-Sari,Kimia,90
-Andi,Biologi,82
-Budi,Biologi,88
-Sari,Biologi,79`;
-}
+    <footer class="footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="footer-text">
+                        <i class="fas fa-project-diagram me-2"></i>
+                        MapReduce Analytics - Average Calculator &copy; 2024
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="footer-links">
+                        <a href="index.html" class="footer-link">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-document.getElementById('averageForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const processBtn = document.getElementById('processBtn');
-    const originalText = processBtn.innerHTML;
-    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-    processBtn.disabled = true;
-    
-    const data = document.getElementById('dataInput').value;
-    
-    fetch('/average', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({data: data})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            displayResults(data);
-            displayProcessSteps(data.process_steps);
-            createChart(data.chart_data);
-            document.getElementById('resultsSection').style.display = 'block';
-            document.getElementById('processSteps').style.display = 'block';
-            document.getElementById('initialState').style.display = 'none';
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat memproses data');
-    })
-    .finally(() => {
-        processBtn.innerHTML = originalText;
-        processBtn.disabled = false;
-    });
-});
-
-function displayResults(data) {
-    let summaryHTML = '<div class="alert alert-success">';
-    summaryHTML += `<strong>Summary:</strong> ${data.results.length} mata pelajaran dianalisis`;
-    summaryHTML += ` | <strong>Total Data:</strong> ${data.total_students} entri`;
-    
-    if (data.errors && data.errors.length > 0) {
-        summaryHTML += ` | <strong>Error:</strong> ${data.errors.length} baris`;
-    }
-    
-    summaryHTML += '</div>';
-    document.getElementById('summary').innerHTML = summaryHTML;
-    
-    const tbody = document.querySelector('#resultsTable tbody');
-    tbody.innerHTML = '';
-    
-    data.results.sort((a, b) => b[1] - a[1]).forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${item[0]}</td>
-            <td><strong>${item[1]}</strong></td>
-            <td><span class="badge bg-success">${Math.round(data.total_students / data.results.length)}</span></td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-function displayProcessSteps(steps) {
-    // Map Phase
-    const mapResults = document.getElementById('mapResults');
-    mapResults.innerHTML = steps.mapped.slice(0, 30).map(item => 
-        `<div class="mb-1"><code>("${item[0]}", ${item[1]})</code></div>`
-    ).join('');
-    
-    if (steps.mapped.length > 30) {
-        mapResults.innerHTML += `<div class="text-muted">... dan ${steps.mapped.length - 30} data lainnya</div>`;
-    }
-    
-    // Shuffle Phase
-    const shuffleResults = document.getElementById('shuffleResults');
-    shuffleResults.innerHTML = Object.entries(steps.shuffled).map(([key, values]) => 
-        `<div class="mb-1"><strong>"${key}":</strong> [${values.join(', ')}]</div>`
-    ).join('');
-    
-    // Reduce Phase
-    const reduceResults = document.getElementById('reduceResults');
-    reduceResults.innerHTML = steps.results.map(item => 
-        `<div class="mb-1"><code>"${item[0]}" → ${item[1]}</code></div>`
-    ).join('');
-}
-
-function createChart(chartData) {
-    const ctx = document.getElementById('averageChart').getContext('2d');
-    
-    if (window.averageChartInstance) {
-        window.averageChartInstance.destroy();
-    }
-    
-    window.averageChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: chartData.labels,
-            datasets: [{
-                label: 'Rata-rata Nilai',
-                data: chartData.data,
-                backgroundColor: 'rgba(40, 167, 69, 0.8)',
-                borderColor: 'rgba(40, 167, 69, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Rata-rata Nilai per Mata Pelajaran'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'Nilai'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Mata Pelajaran'
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Load initial example
-loadExample();
-</script>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/mapreduce.js"></script>
+</body>
+</html>

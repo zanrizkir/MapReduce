@@ -3,261 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Count - MapReduce Web</title>
+    <title>Word Count - MapReduce Analytics</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/word-count.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
         <div class="container">
             <a class="navbar-brand" href="index.html">
-                <i class="fas fa-project-diagram"></i> MapReduce Web
+                <i class="fas fa-project-diagram me-2"></i>
+                <span class="brand-text">MapReduce Analytics</span>
             </a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="word-count.html">Word Count</a>
-                <a class="nav-link" href="average.html">Average</a>
-                <a class="nav-link" href="sales.html">Sales</a>
-                <a class="nav-link" href="chat.html">Chat</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-home me-1"></i>Dashboard
+                </a>
+                <a class="nav-link active" href="word-count.html">
+                    <i class="fas fa-font me-1"></i>Word Count
+                </a>
+                <a class="nav-link" href="average.html">
+                    <i class="fas fa-calculator me-1"></i>Average
+                </a>
+                <a class="nav-link" href="sales.html">
+                    <i class="fas fa-chart-line me-1"></i>Sales
+                </a>
+                <a class="nav-link" href="chat.html">
+                    <i class="fas fa-comments me-1"></i>Chat
+                </a>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-12">
-                <h2><i class="fas fa-font"></i> Word Count Analysis</h2>
-                <p class="text-muted">Hitung frekuensi kata dalam teks menggunakan MapReduce</p>
-            </div>
+    <div class="word-count-container">
+        <!-- Header -->
+        <div class="page-header">
+            <h1 class="page-title">A Word Count Analysis</h1>
+            <p class="page-subtitle">Hitung frekuensi kata dalam teks menggunakan algoritma MapReduce</p>
         </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-edit"></i> Input Teks</h5>
+        <hr class="section-divider">
+
+        <div class="row g-4">
+            <!-- Input Section -->
+            <div class="col-lg-6">
+                <div class="input-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-edit"></i>
+                        Input Teks
+                    </h3>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Masukkan Teks</label>
+                        <textarea class="form-control-modern" id="textInput" rows="12" 
+                                  placeholder="Ketik atau tempel teks Anda di sini..."></textarea>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="textInput" class="form-label">Masukkan Teks:</label>
-                            <textarea class="form-control" id="textInput" rows="12" 
-                                      placeholder="Masukkan teks disini..."></textarea>
-                            <div class="form-text">
-                                Contoh: 
-                                <span class="example-text" onclick="loadExample()">Hello world hello python↵MapReduce is powerful↵Python is great</span>
+                    
+                    <div class="input-hint">
+                        <i class="fas fa-lightbulb"></i>
+                        Tips: Gunakan contoh teks untuk memulai
+                        <span class="example-link" onclick="loadExample()">Muat Contoh</span>
+                    </div>
+
+                    <button class="btn-process" onclick="processWordCount()" id="processBtn">
+                        <i class="fas fa-play"></i>
+                        Proses MapReduce
+                    </button>
+                </div>
+
+                <!-- Process Steps -->
+                <div id="processSteps" class="process-section" style="display: none;">
+                    <h3 class="section-title">
+                        <i class="fas fa-cogs"></i>
+                        Proses MapReduce
+                    </h3>
+                    
+                    <div class="process-phase">
+                        <div class="phase-header active" onclick="togglePhase('mapPhase')">
+                            <div class="phase-icon">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <div class="phase-info">
+                                <h5 class="phase-title">Map Phase</h5>
+                                <p class="phase-description">Memproses setiap baris teks</p>
+                            </div>
+                            <div class="phase-indicator">
+                                <i class="fas fa-chevron-down"></i>
                             </div>
                         </div>
-                        <button class="btn btn-primary" onclick="processWordCount()" id="processBtn">
-                            <i class="fas fa-play"></i> Proses MapReduce
-                        </button>
+                        <div id="mapPhase" class="phase-content">
+                            <div id="mapResults" class="process-output"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="process-phase">
+                        <div class="phase-header" onclick="togglePhase('shufflePhase')">
+                            <div class="phase-icon">
+                                <i class="fas fa-random"></i>
+                            </div>
+                            <div class="phase-info">
+                                <h5 class="phase-title">Shuffle Phase</h5>
+                                <p class="phase-description">Mengelompokkan data berdasarkan kunci</p>
+                            </div>
+                            <div class="phase-indicator">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div id="shufflePhase" class="phase-content" style="display: none;">
+                            <div id="shuffleResults" class="process-output"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="process-phase">
+                        <div class="phase-header" onclick="togglePhase('reducePhase')">
+                            <div class="phase-icon">
+                                <i class="fas fa-redo"></i>
+                            </div>
+                            <div class="phase-info">
+                                <h5 class="phase-title">Reduce Phase</h5>
+                                <p class="phase-description">Mengagregasi hasil akhir</p>
+                            </div>
+                            <div class="phase-indicator">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div id="reducePhase" class="phase-content" style="display: none;">
+                            <div id="reduceResults" class="process-output"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="col-md-6">
-                <div id="resultsSection" style="display: none;">
-                    <div class="card shadow mb-4">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Analisis</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="summary" class="mb-3"></div>
-                            <div class="table-responsive">
-                                <table class="table table-striped" id="resultsTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Kata</th>
-                                            <th>Jumlah</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card shadow">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Visualisasi</h5>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="wordChart" width="400" height="200"></canvas>
+            <!-- Results Section -->
+            <div class="col-lg-6">
+                <div id="resultsSection" class="results-section" style="display: none;">
+                    <!-- Results Card -->
+                    <div class="result-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Hasil Analisis
+                        </h3>
+                        
+                        <div id="summary" class="summary-stats"></div>
+                        
+                        <div class="results-table-container">
+                            <table class="results-table" id="resultsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Kata</th>
+                                        <th>Frekuensi</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
                     </div>
-                </div>
-                
-                <div id="processSteps" style="display: none;" class="mt-4">
-                    <div class="card shadow">
-                        <div class="card-header bg-secondary text-white">
-                            <h5 class="mb-0"><i class="fas fa-cogs"></i> Proses MapReduce</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="accordion" id="processAccordion">
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mapPhase">
-                                            Map Phase
-                                        </button>
-                                    </h2>
-                                    <div id="mapPhase" class="accordion-collapse collapse show" data-bs-parent="#processAccordion">
-                                        <div class="accordion-body">
-                                            <div id="mapResults" class="process-output"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shufflePhase">
-                                            Shuffle Phase
-                                        </button>
-                                    </h2>
-                                    <div id="shufflePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
-                                        <div class="accordion-body">
-                                            <div id="shuffleResults" class="process-output"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reducePhase">
-                                            Reduce Phase
-                                        </button>
-                                    </h2>
-                                    <div id="reducePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
-                                        <div class="accordion-body">
-                                            <div id="reduceResults" class="process-output"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+
+                    <!-- Visualization Card -->
+                    <div class="visualization-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-chart-pie"></i>
+                            Visualisasi Data
+                        </h3>
+                        
+                        <div class="chart-container">
+                            <canvas id="wordChart" width="400" height="250"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div id="initialState" class="text-center text-muted mt-5">
-                    <i class="fas fa-code-branch fa-4x mb-3"></i>
-                    <h5>Belum ada data yang diproses</h5>
-                    <p>Masukkan teks di sebelah kiri dan klik "Proses MapReduce" untuk melihat hasil</p>
+                <!-- Initial State -->
+                <div id="initialState" class="initial-state">
+                    <div class="state-icon">
+                        <i class="fas fa-code-branch"></i>
+                    </div>
+                    <h4 class="state-title">Belum ada data yang diproses</h4>
+                    <p class="state-description">
+                        Masukkan teks di sebelah kiri dan klik "Proses MapReduce" untuk melihat hasil analisis
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="bg-light text-center py-3 mt-5">
+    <footer class="footer">
         <div class="container">
-            <p class="mb-0">MapReduce Web Application &copy; 2024 - Static Version</p>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="footer-text">
+                        <i class="fas fa-project-diagram me-2"></i>
+                        MapReduce Analytics - Word Count &copy; 2024
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="footer-links">
+                        <a href="index.html" class="footer-link">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/mapreduce.js"></script>
-    <script>
-        function loadExample() {
-            document.getElementById('textInput').value = `Hello world hello python
-MapReduce is powerful and efficient
-Python programming is great for data processing
-This web application demonstrates MapReduce algorithm
-Running completely in your browser without backend
-Map phase processes each line of text
-Reduce phase aggregates the results
-The shuffle phase groups data by key`;
-        }
-
-        function processWordCount() {
-            const text = document.getElementById('textInput').value;
-            const lines = text.split('\n').filter(line => line.trim());
-            
-            if (lines.length === 0) {
-                alert('Masukkan teks terlebih dahulu!');
-                return;
-            }
-
-            const processBtn = document.getElementById('processBtn');
-            const originalText = showLoading(processBtn);
-
-            // Simulate processing delay
-            setTimeout(() => {
-                function wordMapper(line, lineNum) {
-                    const words = line.toLowerCase().match(/\w+/g) || [];
-                    return words.map(word => [word, 1]);
-                }
-
-                function wordReducer(key, values) {
-                    return values.reduce((sum, val) => sum + val, 0);
-                }
-
-                const result = MapReduceEngine.mapReduce(lines, wordMapper, wordReducer);
-                displayResults(result);
-                displayProcessSteps(result, 'mapResults', 'shuffleResults', 'reduceResults');
-                createChart(result.results);
-                
-                showSection('resultsSection');
-                showSection('processSteps');
-                hideSection('initialState');
-                hideLoading(processBtn, originalText);
-            }, 500);
-        }
-
-        function displayResults(result) {
-            const totalWords = result.results.reduce((sum, [_, count]) => sum + count, 0);
-            const uniqueWords = result.results.length;
-            
-            document.getElementById('summary').innerHTML = `
-                <div class="alert alert-info">
-                    <strong>Summary:</strong> ${totalWords} total kata, ${uniqueWords} kata unik
-                </div>
-            `;
-            
-            const tbody = document.querySelector('#resultsTable tbody');
-            tbody.innerHTML = '';
-            
-            result.results
-                .sort((a, b) => b[1] - a[1])
-                .forEach(([word, count]) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${word}</td>
-                        <td><span class="badge bg-primary">${count}</span></td>
-                    `;
-                    tbody.appendChild(row);
-                });
-        }
-
-        function createChart(results) {
-            const ctx = document.getElementById('wordChart').getContext('2d');
-            
-            if (window.wordChartInstance) {
-                window.wordChartInstance.destroy();
-            }
-            
-            const topWords = results.sort((a, b) => b[1] - a[1]).slice(0, 10);
-            
-            window.wordChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: topWords.map(item => item[0]),
-                    datasets: [{
-                        label: 'Frekuensi Kata',
-                        data: topWords.map(item => item[1]),
-                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        // Load initial example
-        loadExample();
-    </script>
+    <script src="js/word-count.js"></script>
 </body>
 </html>

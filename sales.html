@@ -1,283 +1,208 @@
-{% extends "base.html" %}
-
-{% block title %}Sales Analyzer - MapReduce Web{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-12">
-        <h2><i class="fas fa-chart-line"></i> Sales Analyzer</h2>
-        <p class="text-muted">Analisis data penjualan menggunakan MapReduce</p>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-warning text-white">
-                <h5 class="mb-0"><i class="fas fa-edit"></i> Input Data Penjualan</h5>
-            </div>
-            <div class="card-body">
-                <form id="salesForm">
-                    <div class="mb-3">
-                        <label for="dataInput" class="form-label">Masukkan Data Penjualan:</label>
-                        <textarea class="form-control" id="dataInput" rows="12" 
-                                  placeholder="Format: Tanggal,Produk,Kategori,Jumlah,Harga&#10;Contoh:&#10;2024-01-01,Laptop,Elektronik,2,8000000&#10;2024-01-01,Novel,Buku,10,150000"></textarea>
-                        <div class="form-text">
-                            Format: Tanggal, Produk, Kategori, Jumlah, Harga (dipisahkan koma)
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-warning" id="processBtn">
-                        <i class="fas fa-play"></i> Proses MapReduce
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary" onclick="loadExample()">
-                        <i class="fas fa-file-alt"></i> Load Contoh
-                    </button>
-                </form>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Analysis - MapReduce Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-project-diagram me-2"></i>
+                <span class="brand-text">MapReduce Analytics</span>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-home me-1"></i>Dashboard
+                </a>
+                <a class="nav-link" href="word-count.html">
+                    <i class="fas fa-font me-1"></i>Word Count
+                </a>
+                <a class="nav-link" href="average.html">
+                    <i class="fas fa-calculator me-1"></i>Average
+                </a>
+                <a class="nav-link active" href="sales.html">
+                    <i class="fas fa-chart-line me-1"></i>Sales
+                </a>
+                <a class="nav-link" href="chat.html">
+                    <i class="fas fa-comments me-1"></i>Chat
+                </a>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div id="resultsSection" style="display: none;">
-            <div class="card shadow mb-4">
-                <div class="card-header bg-warning text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Analisis Penjualan</h5>
-                </div>
-                <div class="card-body">
-                    <div id="summary" class="mb-3"></div>
-                    <div class="table-responsive">
-                        <table class="table table-striped" id="resultsTable">
-                            <thead>
-                                <tr>
-                                    <th>Kategori</th>
-                                    <th>Total Penjualan (Rp)</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    </nav>
+
+    <div class="sales-container">
+        <!-- Header -->
+        <div class="sales-header">
+            <h1 class="sales-title">
+                <i class="fas fa-chart-line me-3"></i>
+                Sales Analysis
+            </h1>
+            <p class="sales-subtitle">Analisis data penjualan menggunakan algoritma MapReduce</p>
+        </div>
+
+        <!-- Data Input Section -->
+        <div class="data-input-section">
+            <h3 class="section-title">
+                <i class="fas fa-database me-2"></i>
+                Input Data Penjualan
+            </h3>
             
-            <div class="card shadow">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Visualisasi</h5>
+            <div class="input-method-selector">
+                <div class="method-tab active">
+                    <i class="fas fa-table me-2"></i>
+                    CSV Format
                 </div>
-                <div class="card-body">
-                    <canvas id="salesChart" width="400" height="200"></canvas>
+                <div class="method-tab">
+                    <i class="fas fa-upload me-2"></i>
+                    Upload File
+                </div>
+            </div>
+
+            <div class="sales-data-input">
+                <label class="form-label">Data Penjualan (Format CSV):</label>
+                <textarea class="sales-textarea" id="salesData" rows="10" placeholder="product,quantity,price,region,date&#10;Laptop,5,12000000,Jakarta,2024-01-15&#10;Smartphone,8,3500000,Bandung,2024-01-16"></textarea>
+                
+                <div class="data-format">
+                    <h5 class="format-title">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Format Data
+                    </h5>
+                    <div class="format-example">
+                        product,quantity,price,region,date
+                    </div>
+                    <div class="data-hint mt-2">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Contoh: Laptop,5,12000000,Jakarta,2024-01-15
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-process" onclick="processSalesData()" id="processSalesBtn">
+                <i class="fas fa-chart-bar"></i>
+                Analisis Penjualan
+            </button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="salesResults" class="results-section" style="display: none;">
+            <!-- Sales Summary -->
+            <div class="result-section">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Ringkasan Penjualan
+                </h3>
+                <div class="sales-summary" id="salesSummary">
+                    <!-- Summary cards will be populated here -->
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <!-- Product Sales Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h4 class="chart-title">Penjualan per Produk</h4>
+                        <div class="chart-actions">
+                            <button class="chart-action">Bulan</button>
+                            <button class="chart-action">Minggu</button>
+                            <button class="chart-action">Hari</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="productChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Regional Sales Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h4 class="chart-title">Penjualan per Region</h4>
+                        <div class="chart-actions">
+                            <button class="chart-action">Bulan</button>
+                            <button class="chart-action">Minggu</button>
+                            <button class="chart-action">Hari</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="regionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Products Table -->
+            <div class="top-products">
+                <h3 class="section-title">
+                    <i class="fas fa-trophy me-2"></i>
+                    Produk Terlaris
+                </h3>
+                <div class="table-responsive">
+                    <table class="products-table" id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>Produk</th>
+                                <th>Total Penjualan</th>
+                                <th>Persentase</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Products will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Regional Performance -->
+            <div class="regional-performance">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    Performa Regional
+                </h3>
+                <div class="regions-grid" id="regionsGrid">
+                    <!-- Region cards will be populated here -->
                 </div>
             </div>
         </div>
-        
-        <div id="processSteps" style="display: none;" class="mt-4">
-            <div class="card shadow">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Proses MapReduce</h5>
+
+        <!-- Empty State -->
+        <div id="salesEmptyState" class="sales-empty-state">
+            <div class="sales-empty-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h4 class="sales-empty-title">Belum ada data penjualan</h4>
+            <p class="sales-empty-description">
+                Masukkan data penjualan dalam format CSV di atas dan klik "Analisis Penjualan" untuk melihat hasil
+            </p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="footer-text">
+                        <i class="fas fa-project-diagram me-2"></i>
+                        MapReduce Analytics - Sales Analysis &copy; 2024
+                    </p>
                 </div>
-                <div class="card-body">
-                    <div class="accordion" id="processAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mapPhase">
-                                    <i class="fas fa-map-marked-alt me-2"></i>Map Phase
-                                </button>
-                            </h2>
-                            <div id="mapPhase" class="accordion-collapse collapse show" data-bs-parent="#processAccordion">
-                                <div class="accordion-body">
-                                    <div id="mapResults" class="process-output"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shufflePhase">
-                                    <i class="fas fa-random me-2"></i>Shuffle Phase
-                                </button>
-                            </h2>
-                            <div id="shufflePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
-                                <div class="accordion-body">
-                                    <div id="shuffleResults" class="process-output"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reducePhase">
-                                    <i class="fas fa-redo me-2"></i>Reduce Phase
-                                </button>
-                            </h2>
-                            <div id="reducePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
-                                <div class="accordion-body">
-                                    <div id="reduceResults" class="process-output"></div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="footer-links">
+                        <a href="index.html" class="footer-link">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
+    </footer>
 
-        <div id="initialState" class="text-center text-muted mt-5">
-            <i class="fas fa-chart-line fa-4x mb-3"></i>
-            <h5>Belum ada data yang diproses</h5>
-            <p>Masukkan data penjualan di sebelah kiri dan klik "Proses MapReduce" untuk melihat hasil</p>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-function loadExample() {
-    document.getElementById('dataInput').value = `2024-01-01,Laptop,Elektronik,2,8000000
-2024-01-01,Novel,Buku,10,150000
-2024-01-02,Smartphone,Elektronik,5,5000000
-2024-01-02,Textbook,Buku,7,450000
-2024-01-03,Tablet,Elektronik,3,3000000
-2024-01-03,Magazine,Buku,15,75000
-2024-01-04,Printer,Elektronik,4,1200000
-2024-01-04,Comic,Buku,8,125000
-2024-01-05,Monitor,Elektronik,6,1500000
-2024-01-05,Notebook,Buku,20,25000`;
-}
-
-document.getElementById('salesForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const processBtn = document.getElementById('processBtn');
-    const originalText = processBtn.innerHTML;
-    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-    processBtn.disabled = true;
-    
-    const data = document.getElementById('dataInput').value;
-    
-    fetch('/sales', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({data: data})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            displayResults(data);
-            displayProcessSteps(data.process_steps);
-            createChart(data.chart_data);
-            document.getElementById('resultsSection').style.display = 'block';
-            document.getElementById('processSteps').style.display = 'block';
-            document.getElementById('initialState').style.display = 'none';
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat memproses data');
-    })
-    .finally(() => {
-        processBtn.innerHTML = originalText;
-        processBtn.disabled = false;
-    });
-});
-
-function displayResults(data) {
-    let summaryHTML = '<div class="alert alert-warning">';
-    summaryHTML += `<strong>Summary:</strong> ${data.results.length} kategori produk`;
-    summaryHTML += ` | <strong>Total Revenue:</strong> Rp ${data.total_revenue.toLocaleString('id-ID')}`;
-    
-    if (data.errors && data.errors.length > 0) {
-        summaryHTML += ` | <strong>Error:</strong> ${data.errors.length} baris`;
-    }
-    
-    summaryHTML += '</div>';
-    document.getElementById('summary').innerHTML = summaryHTML;
-    
-    const tbody = document.querySelector('#resultsTable tbody');
-    tbody.innerHTML = '';
-    
-    data.results.sort((a, b) => b[1] - a[1]).forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${item[0]}</td>
-            <td><strong>Rp ${item[1].toLocaleString('id-ID')}</strong></td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-function displayProcessSteps(steps) {
-    // Map Phase
-    const mapResults = document.getElementById('mapResults');
-    mapResults.innerHTML = steps.mapped.slice(0, 30).map(item => 
-        `<div class="mb-1"><code>("${item[0]}", ${item[1]})</code></div>`
-    ).join('');
-    
-    if (steps.mapped.length > 30) {
-        mapResults.innerHTML += `<div class="text-muted">... dan ${steps.mapped.length - 30} data lainnya</div>`;
-    }
-    
-    // Shuffle Phase
-    const shuffleResults = document.getElementById('shuffleResults');
-    shuffleResults.innerHTML = Object.entries(steps.shuffled).map(([key, values]) => 
-        `<div class="mb-1"><strong>"${key}":</strong> [${values.join(', ')}]</div>`
-    ).join('');
-    
-    // Reduce Phase
-    const reduceResults = document.getElementById('reduceResults');
-    reduceResults.innerHTML = steps.results.map(item => 
-        `<div class="mb-1"><code>"${item[0]}" → Rp ${item[1].toLocaleString('id-ID')}</code></div>`
-    ).join('');
-}
-
-function createChart(chartData) {
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    
-    if (window.salesChartInstance) {
-        window.salesChartInstance.destroy();
-    }
-    
-    window.salesChartInstance = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: chartData.labels,
-            datasets: [{
-                label: 'Total Penjualan (Rp)',
-                data: chartData.data,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 206, 86, 0.8)',
-                    'rgba(75, 192, 192, 0.8)',
-                    'rgba(153, 102, 255, 0.8)',
-                    'rgba(255, 159, 64, 0.8)',
-                    'rgba(199, 199, 199, 0.8)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Distribusi Penjualan per Kategori'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            return `${label}: Rp ${value.toLocaleString('id-ID')}`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Load initial example
-loadExample();
-</script>
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/mapreduce.js"></script>
+</body>
+</html>

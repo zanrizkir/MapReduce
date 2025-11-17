@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Analyzer - MapReduce Web{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-chart-line"></i> Sales Analyzer</h2>
+        <p class="text-muted">Analisis data penjualan menggunakan MapReduce</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="fas fa-edit"></i> Input Data Penjualan</h5>
+            </div>
+            <div class="card-body">
+                <form id="salesForm">
+                    <div class="mb-3">
+                        <label for="dataInput" class="form-label">Masukkan Data Penjualan:</label>
+                        <textarea class="form-control" id="dataInput" rows="12" 
+                                  placeholder="Format: Tanggal,Produk,Kategori,Jumlah,Harga&#10;Contoh:&#10;2024-01-01,Laptop,Elektronik,2,8000000&#10;2024-01-01,Novel,Buku,10,150000"></textarea>
+                        <div class="form-text">
+                            Format: Tanggal, Produk, Kategori, Jumlah, Harga (dipisahkan koma)
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning" id="processBtn">
+                        <i class="fas fa-play"></i> Proses MapReduce
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="loadExample()">
+                        <i class="fas fa-file-alt"></i> Load Contoh
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div id="resultsSection" style="display: none;">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Analisis Penjualan</h5>
+                </div>
+                <div class="card-body">
+                    <div id="summary" class="mb-3"></div>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>Kategori</th>
+                                    <th>Total Penjualan (Rp)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Visualisasi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div id="processSteps" style="display: none;" class="mt-4">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Proses MapReduce</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="processAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mapPhase">
+                                    <i class="fas fa-map-marked-alt me-2"></i>Map Phase
+                                </button>
+                            </h2>
+                            <div id="mapPhase" class="accordion-collapse collapse show" data-bs-parent="#processAccordion">
+                                <div class="accordion-body">
+                                    <div id="mapResults" class="process-output"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shufflePhase">
+                                    <i class="fas fa-random me-2"></i>Shuffle Phase
+                                </button>
+                            </h2>
+                            <div id="shufflePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
+                                <div class="accordion-body">
+                                    <div id="shuffleResults" class="process-output"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reducePhase">
+                                    <i class="fas fa-redo me-2"></i>Reduce Phase
+                                </button>
+                            </h2>
+                            <div id="reducePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
+                                <div class="accordion-body">
+                                    <div id="reduceResults" class="process-output"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="initialState" class="text-center text-muted mt-5">
+            <i class="fas fa-chart-line fa-4x mb-3"></i>
+            <h5>Belum ada data yang diproses</h5>
+            <p>Masukkan data penjualan di sebelah kiri dan klik "Proses MapReduce" untuk melihat hasil</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadExample() {
+    document.getElementById('dataInput').value = `2024-01-01,Laptop,Elektronik,2,8000000
+2024-01-01,Novel,Buku,10,150000
+2024-01-02,Smartphone,Elektronik,5,5000000
+2024-01-02,Textbook,Buku,7,450000
+2024-01-03,Tablet,Elektronik,3,3000000
+2024-01-03,Magazine,Buku,15,75000
+2024-01-04,Printer,Elektronik,4,1200000
+2024-01-04,Comic,Buku,8,125000
+2024-01-05,Monitor,Elektronik,6,1500000
+2024-01-05,Notebook,Buku,20,25000`;
+}
+
+document.getElementById('salesForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const processBtn = document.getElementById('processBtn');
+    const originalText = processBtn.innerHTML;
+    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    processBtn.disabled = true;
+    
+    const data = document.getElementById('dataInput').value;
+    
+    fetch('/sales', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({data: data})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayResults(data);
+            displayProcessSteps(data.process_steps);
+            createChart(data.chart_data);
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('processSteps').style.display = 'block';
+            document.getElementById('initialState').style.display = 'none';
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat memproses data');
+    })
+    .finally(() => {
+        processBtn.innerHTML = originalText;
+        processBtn.disabled = false;
+    });
+});
+
+function displayResults(data) {
+    let summaryHTML = '<div class="alert alert-warning">';
+    summaryHTML += `<strong>Summary:</strong> ${data.results.length} kategori produk`;
+    summaryHTML += ` | <strong>Total Revenue:</strong> Rp ${data.total_revenue.toLocaleString('id-ID')}`;
+    
+    if (data.errors && data.errors.length > 0) {
+        summaryHTML += ` | <strong>Error:</strong> ${data.errors.length} baris`;
+    }
+    
+    summaryHTML += '</div>';
+    document.getElementById('summary').innerHTML = summaryHTML;
+    
+    const tbody = document.querySelector('#resultsTable tbody');
+    tbody.innerHTML = '';
+    
+    data.results.sort((a, b) => b[1] - a[1]).forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item[0]}</td>
+            <td><strong>Rp ${item[1].toLocaleString('id-ID')}</strong></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function displayProcessSteps(steps) {
+    // Map Phase
+    const mapResults = document.getElementById('mapResults');
+    mapResults.innerHTML = steps.mapped.slice(0, 30).map(item => 
+        `<div class="mb-1"><code>("${item[0]}", ${item[1]})</code></div>`
+    ).join('');
+    
+    if (steps.mapped.length > 30) {
+        mapResults.innerHTML += `<div class="text-muted">... dan ${steps.mapped.length - 30} data lainnya</div>`;
+    }
+    
+    // Shuffle Phase
+    const shuffleResults = document.getElementById('shuffleResults');
+    shuffleResults.innerHTML = Object.entries(steps.shuffled).map(([key, values]) => 
+        `<div class="mb-1"><strong>"${key}":</strong> [${values.join(', ')}]</div>`
+    ).join('');
+    
+    // Reduce Phase
+    const reduceResults = document.getElementById('reduceResults');
+    reduceResults.innerHTML = steps.results.map(item => 
+        `<div class="mb-1"><code>"${item[0]}" → Rp ${item[1].toLocaleString('id-ID')}</code></div>`
+    ).join('');
+}
+
+function createChart(chartData) {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    
+    if (window.salesChartInstance) {
+        window.salesChartInstance.destroy();
+    }
+    
+    window.salesChartInstance = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Total Penjualan (Rp)',
+                data: chartData.data,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(199, 199, 199, 0.8)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Distribusi Penjualan per Kategori'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            return `${label}: Rp ${value.toLocaleString('id-ID')}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Load initial example
+loadExample();
+</script>
+{% endblock %}

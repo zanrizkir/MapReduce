@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Count - MapReduce Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-project-diagram"></i> MapReduce Web
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="word-count.html">Word Count</a>
+                <a class="nav-link" href="average.html">Average</a>
+                <a class="nav-link" href="sales.html">Sales</a>
+                <a class="nav-link" href="chat.html">Chat</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2><i class="fas fa-font"></i> Word Count Analysis</h2>
+                <p class="text-muted">Hitung frekuensi kata dalam teks menggunakan MapReduce</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-edit"></i> Input Teks</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="textInput" class="form-label">Masukkan Teks:</label>
+                            <textarea class="form-control" id="textInput" rows="12" 
+                                      placeholder="Masukkan teks disini..."></textarea>
+                            <div class="form-text">
+                                Contoh: 
+                                <span class="example-text" onclick="loadExample()">Hello world hello python↵MapReduce is powerful↵Python is great</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="processWordCount()" id="processBtn">
+                            <i class="fas fa-play"></i> Proses MapReduce
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div id="resultsSection" style="display: none;">
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Analisis</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="summary" class="mb-3"></div>
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="resultsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Kata</th>
+                                            <th>Jumlah</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Visualisasi</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="wordChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="processSteps" style="display: none;" class="mt-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="fas fa-cogs"></i> Proses MapReduce</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="accordion" id="processAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mapPhase">
+                                            Map Phase
+                                        </button>
+                                    </h2>
+                                    <div id="mapPhase" class="accordion-collapse collapse show" data-bs-parent="#processAccordion">
+                                        <div class="accordion-body">
+                                            <div id="mapResults" class="process-output"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shufflePhase">
+                                            Shuffle Phase
+                                        </button>
+                                    </h2>
+                                    <div id="shufflePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
+                                        <div class="accordion-body">
+                                            <div id="shuffleResults" class="process-output"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reducePhase">
+                                            Reduce Phase
+                                        </button>
+                                    </h2>
+                                    <div id="reducePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
+                                        <div class="accordion-body">
+                                            <div id="reduceResults" class="process-output"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="initialState" class="text-center text-muted mt-5">
+                    <i class="fas fa-code-branch fa-4x mb-3"></i>
+                    <h5>Belum ada data yang diproses</h5>
+                    <p>Masukkan teks di sebelah kiri dan klik "Proses MapReduce" untuk melihat hasil</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">MapReduce Web Application &copy; 2024 - Static Version</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/mapreduce.js"></script>
+    <script>
+        function loadExample() {
+            document.getElementById('textInput').value = `Hello world hello python
+MapReduce is powerful and efficient
+Python programming is great for data processing
+This web application demonstrates MapReduce algorithm
+Running completely in your browser without backend
+Map phase processes each line of text
+Reduce phase aggregates the results
+The shuffle phase groups data by key`;
+        }
+
+        function processWordCount() {
+            const text = document.getElementById('textInput').value;
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            if (lines.length === 0) {
+                alert('Masukkan teks terlebih dahulu!');
+                return;
+            }
+
+            const processBtn = document.getElementById('processBtn');
+            const originalText = showLoading(processBtn);
+
+            // Simulate processing delay
+            setTimeout(() => {
+                function wordMapper(line, lineNum) {
+                    const words = line.toLowerCase().match(/\w+/g) || [];
+                    return words.map(word => [word, 1]);
+                }
+
+                function wordReducer(key, values) {
+                    return values.reduce((sum, val) => sum + val, 0);
+                }
+
+                const result = MapReduceEngine.mapReduce(lines, wordMapper, wordReducer);
+                displayResults(result);
+                displayProcessSteps(result, 'mapResults', 'shuffleResults', 'reduceResults');
+                createChart(result.results);
+                
+                showSection('resultsSection');
+                showSection('processSteps');
+                hideSection('initialState');
+                hideLoading(processBtn, originalText);
+            }, 500);
+        }
+
+        function displayResults(result) {
+            const totalWords = result.results.reduce((sum, [_, count]) => sum + count, 0);
+            const uniqueWords = result.results.length;
+            
+            document.getElementById('summary').innerHTML = `
+                <div class="alert alert-info">
+                    <strong>Summary:</strong> ${totalWords} total kata, ${uniqueWords} kata unik
+                </div>
+            `;
+            
+            const tbody = document.querySelector('#resultsTable tbody');
+            tbody.innerHTML = '';
+            
+            result.results
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([word, count]) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${word}</td>
+                        <td><span class="badge bg-primary">${count}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+        }
+
+        function createChart(results) {
+            const ctx = document.getElementById('wordChart').getContext('2d');
+            
+            if (window.wordChartInstance) {
+                window.wordChartInstance.destroy();
+            }
+            
+            const topWords = results.sort((a, b) => b[1] - a[1]).slice(0, 10);
+            
+            window.wordChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topWords.map(item => item[0]),
+                    datasets: [{
+                        label: 'Frekuensi Kata',
+                        data: topWords.map(item => item[1]),
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load initial example
+        loadExample();
+    </script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Average Calculator - MapReduce Web{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-calculator"></i> Average Calculator</h2>
+        <p class="text-muted">Hitung rata-rata nilai menggunakan MapReduce</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-edit"></i> Input Data Nilai</h5>
+            </div>
+            <div class="card-body">
+                <form id="averageForm">
+                    <div class="mb-3">
+                        <label for="dataInput" class="form-label">Masukkan Data Nilai:</label>
+                        <textarea class="form-control" id="dataInput" rows="12" 
+                                  placeholder="Format: Nama,MataPelajaran,Nilai&#10;Contoh:&#10;Andi,Matematika,85&#10;Budi,Matematika,90&#10;Sari,Matematika,78"></textarea>
+                        <div class="form-text">
+                            Format: Nama, Mata Pelajaran, Nilai (dipisahkan koma)
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success" id="processBtn">
+                        <i class="fas fa-play"></i> Proses MapReduce
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="loadExample()">
+                        <i class="fas fa-file-alt"></i> Load Contoh
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div id="resultsSection" style="display: none;">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Hasil Rata-rata</h5>
+                </div>
+                <div class="card-body">
+                    <div id="summary" class="mb-3"></div>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>Mata Pelajaran</th>
+                                    <th>Rata-rata</th>
+                                    <th>Jumlah Data</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Visualisasi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="averageChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div id="processSteps" style="display: none;" class="mt-4">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Proses MapReduce</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="processAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mapPhase">
+                                    <i class="fas fa-map-marked-alt me-2"></i>Map Phase
+                                </button>
+                            </h2>
+                            <div id="mapPhase" class="accordion-collapse collapse show" data-bs-parent="#processAccordion">
+                                <div class="accordion-body">
+                                    <div id="mapResults" class="process-output"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shufflePhase">
+                                    <i class="fas fa-random me-2"></i>Shuffle Phase
+                                </button>
+                            </h2>
+                            <div id="shufflePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
+                                <div class="accordion-body">
+                                    <div id="shuffleResults" class="process-output"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#reducePhase">
+                                    <i class="fas fa-redo me-2"></i>Reduce Phase
+                                </button>
+                            </h2>
+                            <div id="reducePhase" class="accordion-collapse collapse" data-bs-parent="#processAccordion">
+                                <div class="accordion-body">
+                                    <div id="reduceResults" class="process-output"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="initialState" class="text-center text-muted mt-5">
+            <i class="fas fa-calculator fa-4x mb-3"></i>
+            <h5>Belum ada data yang diproses</h5>
+            <p>Masukkan data nilai di sebelah kiri dan klik "Proses MapReduce" untuk melihat hasil</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadExample() {
+    document.getElementById('dataInput').value = `Andi,Matematika,85
+Budi,Matematika,90
+Sari,Matematika,78
+Andi,Fisika,88
+Budi,Fisika,92
+Sari,Fisika,85
+Andi,Kimia,76
+Budi,Kimia,85
+Sari,Kimia,90
+Andi,Biologi,82
+Budi,Biologi,88
+Sari,Biologi,79`;
+}
+
+document.getElementById('averageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const processBtn = document.getElementById('processBtn');
+    const originalText = processBtn.innerHTML;
+    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    processBtn.disabled = true;
+    
+    const data = document.getElementById('dataInput').value;
+    
+    fetch('/average', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({data: data})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayResults(data);
+            displayProcessSteps(data.process_steps);
+            createChart(data.chart_data);
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('processSteps').style.display = 'block';
+            document.getElementById('initialState').style.display = 'none';
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat memproses data');
+    })
+    .finally(() => {
+        processBtn.innerHTML = originalText;
+        processBtn.disabled = false;
+    });
+});
+
+function displayResults(data) {
+    let summaryHTML = '<div class="alert alert-success">';
+    summaryHTML += `<strong>Summary:</strong> ${data.results.length} mata pelajaran dianalisis`;
+    summaryHTML += ` | <strong>Total Data:</strong> ${data.total_students} entri`;
+    
+    if (data.errors && data.errors.length > 0) {
+        summaryHTML += ` | <strong>Error:</strong> ${data.errors.length} baris`;
+    }
+    
+    summaryHTML += '</div>';
+    document.getElementById('summary').innerHTML = summaryHTML;
+    
+    const tbody = document.querySelector('#resultsTable tbody');
+    tbody.innerHTML = '';
+    
+    data.results.sort((a, b) => b[1] - a[1]).forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item[0]}</td>
+            <td><strong>${item[1]}</strong></td>
+            <td><span class="badge bg-success">${Math.round(data.total_students / data.results.length)}</span></td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function displayProcessSteps(steps) {
+    // Map Phase
+    const mapResults = document.getElementById('mapResults');
+    mapResults.innerHTML = steps.mapped.slice(0, 30).map(item => 
+        `<div class="mb-1"><code>("${item[0]}", ${item[1]})</code></div>`
+    ).join('');
+    
+    if (steps.mapped.length > 30) {
+        mapResults.innerHTML += `<div class="text-muted">... dan ${steps.mapped.length - 30} data lainnya</div>`;
+    }
+    
+    // Shuffle Phase
+    const shuffleResults = document.getElementById('shuffleResults');
+    shuffleResults.innerHTML = Object.entries(steps.shuffled).map(([key, values]) => 
+        `<div class="mb-1"><strong>"${key}":</strong> [${values.join(', ')}]</div>`
+    ).join('');
+    
+    // Reduce Phase
+    const reduceResults = document.getElementById('reduceResults');
+    reduceResults.innerHTML = steps.results.map(item => 
+        `<div class="mb-1"><code>"${item[0]}" → ${item[1]}</code></div>`
+    ).join('');
+}
+
+function createChart(chartData) {
+    const ctx = document.getElementById('averageChart').getContext('2d');
+    
+    if (window.averageChartInstance) {
+        window.averageChartInstance.destroy();
+    }
+    
+    window.averageChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Rata-rata Nilai',
+                data: chartData.data,
+                backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Rata-rata Nilai per Mata Pelajaran'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Nilai'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Mata Pelajaran'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Load initial example
+loadExample();
+</script>
+{% endblock %}

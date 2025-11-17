@@ -185,7 +185,7 @@ function processWordCount() {
         hideLoading(processBtn, originalText);
         
         // Auto-expand map phase
-        togglePhase('mapPhase');
+        setTimeout(() => togglePhase('mapPhase'), 100);
         
     }, 1000);
 }
@@ -308,7 +308,6 @@ function createWordCountChart(results) {
 let numbers = [];
 let averageChart = null;
 
-// Switch between input methods
 function initAverageMethods() {
     document.querySelectorAll('.method-card').forEach(card => {
         card.addEventListener('click', function() {
@@ -318,7 +317,6 @@ function initAverageMethods() {
     });
 }
 
-// Add number to manual input
 function addNumber() {
     const input = document.getElementById('numberInput');
     if (!input) return;
@@ -333,7 +331,6 @@ function addNumber() {
     }
 }
 
-// Update numbers list display
 function updateNumbersList() {
     const list = document.getElementById('numbersList');
     if (!list) return;
@@ -353,13 +350,11 @@ function updateNumbersList() {
     });
 }
 
-// Remove number from list
 function removeNumber(index) {
     numbers.splice(index, 1);
     updateNumbersList();
 }
 
-// Process text data
 function processTextData() {
     const textData = document.getElementById('textData');
     if (!textData) return;
@@ -376,7 +371,6 @@ function processTextData() {
     processNumbers(numbers);
 }
 
-// Process manual data
 function processManualData() {
     if (numbers.length === 0) {
         alert('Tambahkan angka terlebih dahulu!');
@@ -386,7 +380,6 @@ function processManualData() {
     processNumbers(numbers);
 }
 
-// Main processing function for average
 function processNumbers(data) {
     const processBtn = document.querySelector('.btn-process');
     const originalText = showLoading(processBtn);
@@ -431,7 +424,7 @@ function processNumbers(data) {
         hideLoading(processBtn, originalText);
         
         // Auto-expand map phase
-        togglePhase('mapPhase');
+        setTimeout(() => togglePhase('mapPhase'), 100);
         
     }, 800);
 }
@@ -537,7 +530,8 @@ function createAverageChart(data) {
                 data: histogram,
                 backgroundColor: 'rgba(102, 126, 234, 0.8)',
                 borderColor: 'rgba(102, 126, 234, 1)',
-                borderWidth: 1
+                borderWidth: 1,
+                borderRadius: 6,
             }]
         },
         options: {
@@ -573,6 +567,21 @@ function createAverageChart(data) {
 }
 
 // ==================== SALES ANALYSIS FUNCTIONS ====================
+function loadSalesExample() {
+    const salesData = document.getElementById('salesData');
+    if (salesData) {
+        salesData.value = `Laptop,5,12000000,Jakarta,2024-01-15
+Smartphone,8,3500000,Jakarta,2024-01-16
+Tablet,3,6500000,Bandung,2024-01-16
+Laptop,2,12000000,Surabaya,2024-01-17
+Smartphone,12,3500000,Bandung,2024-01-18
+Headphone,15,800000,Jakarta,2024-01-18
+Tablet,4,6500000,Surabaya,2024-01-19
+Laptop,3,12000000,Jakarta,2024-01-20
+Smartphone,6,3500000,Surabaya,2024-01-20`;
+    }
+}
+
 function processSalesData() {
     const salesData = document.getElementById('salesData');
     if (!salesData) return;
@@ -731,13 +740,13 @@ function displayRegionSales(regionSales) {
                         <div class="region-sales">${formatCurrency(total)}</div>
                     </div>
                     <div class="region-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Penjualan</span>
-                            <span class="stat-value">${formatCurrency(total)}</span>
+                        <div class="region-stat-item">
+                            <span class="region-stat-label">Penjualan</span>
+                            <span class="region-stat-value">${formatCurrency(total)}</span>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Market Share</span>
-                            <span class="stat-value">${((total / totalSales) * 100).toFixed(1)}%</span>
+                        <div class="region-stat-item">
+                            <span class="region-stat-label">Market Share</span>
+                            <span class="region-stat-value">${((total / totalSales) * 100).toFixed(1)}%</span>
                         </div>
                     </div>
                 `;
@@ -746,7 +755,6 @@ function displayRegionSales(regionSales) {
     }
 }
 
-// Create Product Sales Chart
 function createProductChart(productSales) {
     const ctx = document.getElementById('productChart');
     if (!ctx) return;
@@ -814,7 +822,6 @@ function createProductChart(productSales) {
     });
 }
 
-// Create Region Sales Chart
 function createRegionChart(regionSales) {
     const ctx = document.getElementById('regionChart');
     if (!ctx) return;
@@ -874,6 +881,21 @@ function createRegionChart(regionSales) {
 }
 
 // ==================== CHAT ANALYSIS FUNCTIONS ====================
+function loadChatExample() {
+    const chatData = document.getElementById('chatData');
+    if (chatData) {
+        chatData.value = `2024-01-15 10:30:00,Alice,Halo semuanya, apa kabar?
+2024-01-15 10:31:00,Bob,Hai Alice, kabar baik! Bagaimana denganmu?
+2024-01-15 10:32:00,Charlie,Saya juga baik, terima kasih
+2024-01-15 10:33:00,Alice,Ada yang sudah coba fitur baru?
+2024-01-15 10:34:00,Bob,Saya sudah coba, sangat menarik
+2024-01-15 10:35:00,Alice,Bagus sekali, saya juga suka
+2024-01-15 10:36:00,Charlie,Saya belum coba, nanti saya coba
+2024-01-15 10:37:00,Bob,Recomended banget fiturnya
+2024-01-15 10:38:00,Alice,Sama, saya setuju dengan Bob`;
+    }
+}
+
 function processChatData() {
     const chatData = document.getElementById('chatData');
     if (!chatData) return;
@@ -893,21 +915,15 @@ function processChatData() {
         try {
             // Parse chat data (format: timestamp,user,message)
             const messages = lines.map(line => {
-                const parts = line.split(',');
-                if (parts.length < 3) return null;
-                
-                const timestamp = parts[0]?.trim();
-                const user = parts[1]?.trim();
-                const message = parts.slice(2).join(',').trim();
-                
+                const [timestamp, user, ...messageParts] = line.split(',');
                 return {
-                    timestamp: timestamp,
-                    user: user,
-                    message: message,
-                    words: message.split(/\s+/).length,
+                    timestamp: timestamp?.trim(),
+                    user: user?.trim(),
+                    message: messageParts.join(',').trim(),
+                    words: messageParts.join(',').trim().split(/\s+/).length,
                     hour: timestamp ? new Date(timestamp).getHours() : 0
                 };
-            }).filter(msg => msg && msg.user && msg.message);
+            }).filter(msg => msg.user && msg.message);
 
             if (messages.length === 0) {
                 throw new Error('Format data tidak valid');
@@ -918,6 +934,7 @@ function processChatData() {
             processParticipantAnalysis(messages);
             processWordFrequency(messages);
             processActivityTimeline(messages);
+            createSentimentChart();
             
             hideLoading(processBtn, originalText);
             showSection('chatResults');
@@ -944,20 +961,20 @@ function displayChatStatistics(totalMessages, uniqueUsers, totalWords, avgWordsP
     if (statsElement) {
         statsElement.innerHTML = `
             <div class="stat-card messages">
-                <div class="stat-value">${totalMessages}</div>
-                <div class="stat-label">Total Pesan</div>
+                <div class="chat-stat-value">${totalMessages}</div>
+                <div class="chat-stat-label">Total Pesan</div>
             </div>
             <div class="stat-card participants">
-                <div class="stat-value">${uniqueUsers}</div>
-                <div class="stat-label">Partisipan</div>
+                <div class="chat-stat-value">${uniqueUsers}</div>
+                <div class="chat-stat-label">Partisipan</div>
             </div>
             <div class="stat-card words">
-                <div class="stat-value">${totalWords}</div>
-                <div class="stat-label">Total Kata</div>
+                <div class="chat-stat-value">${totalWords}</div>
+                <div class="chat-stat-label">Total Kata</div>
             </div>
             <div class="stat-card media">
-                <div class="stat-value">${avgWordsPerMessage.toFixed(1)}</div>
-                <div class="stat-label">Kata/Pesan</div>
+                <div class="chat-stat-value">${avgWordsPerMessage.toFixed(1)}</div>
+                <div class="chat-stat-label">Kata/Pesan</div>
             </div>
         `;
     }
@@ -1204,7 +1221,6 @@ function createParticipantChart(participantStats) {
     });
 }
 
-// Create Sentiment Chart (placeholder - you can integrate with sentiment analysis API)
 function createSentimentChart() {
     const ctx = document.getElementById('sentimentChart');
     if (!ctx) return;
@@ -1250,210 +1266,6 @@ function createSentimentChart() {
     });
 }
 
-// Initialize sentiment chart when chat analysis is processed
-function initializeSentimentChart() {
-    createSentimentChart();
-}
-
-// ==================== CHAT ANALYSIS FUNCTIONS ====================
-function processChatData() {
-    const chatData = document.getElementById('chatData');
-    if (!chatData) return;
-
-    const text = chatData.value;
-    const lines = text.split('\n').filter(line => line.trim());
-    
-    if (lines.length === 0) {
-        alert('Masukkan data chat terlebih dahulu!');
-        return;
-    }
-
-    const processBtn = document.getElementById('processChatBtn');
-    const originalText = showLoading(processBtn);
-
-    setTimeout(() => {
-        try {
-            // Parse chat data (format: timestamp,user,message)
-            const messages = lines.map(line => {
-                const [timestamp, user, ...messageParts] = line.split(',');
-                return {
-                    timestamp: timestamp?.trim(),
-                    user: user?.trim(),
-                    message: messageParts.join(',').trim(),
-                    words: messageParts.join(',').trim().split(/\s+/).length
-                };
-            }).filter(msg => msg.user && msg.message);
-
-            if (messages.length === 0) {
-                throw new Error('Format data tidak valid');
-            }
-
-            // Process chat analysis
-            processChatStatistics(messages);
-            processParticipantAnalysis(messages);
-            processWordFrequency(messages);
-            
-            hideLoading(processBtn, originalText);
-            showSection('chatResults');
-            hideSection('chatEmptyState');
-            
-        } catch (error) {
-            alert('Error memproses data: ' + error.message);
-            hideLoading(processBtn, originalText);
-        }
-    }, 1000);
-}
-
-function processChatStatistics(messages) {
-    const totalMessages = messages.length;
-    const uniqueUsers = [...new Set(messages.map(msg => msg.user))].length;
-    const totalWords = messages.reduce((sum, msg) => sum + msg.words, 0);
-    const avgWordsPerMessage = totalWords / totalMessages;
-    
-    displayChatStatistics(totalMessages, uniqueUsers, totalWords, avgWordsPerMessage);
-}
-
-function displayChatStatistics(totalMessages, uniqueUsers, totalWords, avgWordsPerMessage) {
-    const statsElement = document.getElementById('chatStatistics');
-    if (statsElement) {
-        statsElement.innerHTML = `
-            <div class="stat-card messages">
-                <div class="stat-value">${totalMessages}</div>
-                <div class="stat-label">Total Pesan</div>
-                <div class="stat-trend trend-up">+12%</div>
-            </div>
-            <div class="stat-card participants">
-                <div class="stat-value">${uniqueUsers}</div>
-                <div class="stat-label">Partisipan</div>
-                <div class="stat-trend trend-up">+5%</div>
-            </div>
-            <div class="stat-card words">
-                <div class="stat-value">${totalWords}</div>
-                <div class="stat-label">Total Kata</div>
-                <div class="stat-trend trend-up">+8%</div>
-            </div>
-            <div class="stat-card media">
-                <div class="stat-value">${avgWordsPerMessage.toFixed(1)}</div>
-                <div class="stat-label">Kata/Pesan</div>
-                <div class="stat-trend trend-down">-2%</div>
-            </div>
-        `;
-    }
-}
-
-function processParticipantAnalysis(messages) {
-    // MapReduce for participant message count
-    function participantMapper(message, index) {
-        return [message.user, 1];
-    }
-
-    function participantReducer(key, values) {
-        return values.reduce((sum, val) => sum + val, 0);
-    }
-
-    const participantStats = MapReduceEngine.mapReduce(messages, participantMapper, participantReducer);
-    displayParticipantAnalysis(participantStats.results, messages);
-}
-
-function displayParticipantAnalysis(participantStats, messages) {
-    const participantList = document.getElementById('participantList');
-    if (participantList) {
-        participantList.innerHTML = '';
-        
-        participantStats
-            .sort((a, b) => b[1] - a[1])
-            .forEach(([user, messageCount]) => {
-                const userMessages = messages.filter(msg => msg.user === user);
-                const wordCount = userMessages.reduce((sum, msg) => sum + msg.words, 0);
-                const avgWords = wordCount / messageCount;
-                
-                const participantItem = document.createElement('div');
-                participantItem.className = 'participant-item';
-                participantItem.innerHTML = `
-                    <div class="participant-avatar">
-                        ${user.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="participant-info">
-                        <h5 class="participant-name">${user}</h5>
-                        <p class="participant-details">${avgWords.toFixed(1)} kata/pesan</p>
-                    </div>
-                    <div class="participant-metrics">
-                        <div class="messages-count">${messageCount}</div>
-                        <div class="words-count">${wordCount} kata</div>
-                    </div>
-                `;
-                participantList.appendChild(participantItem);
-            });
-    }
-}
-
-function processWordFrequency(messages) {
-    // Extract all words from messages
-    const allWords = messages.flatMap(msg => 
-        msg.message.toLowerCase().match(/\b\w+\b/g) || []
-    );
-    
-    // MapReduce for word frequency
-    function wordMapper(word, index) {
-        return [word, 1];
-    }
-
-    function wordReducer(key, values) {
-        return values.reduce((sum, val) => sum + val, 0);
-    }
-
-    const wordStats = MapReduceEngine.mapReduce(allWords, wordMapper, wordReducer);
-    displayWordFrequency(wordStats.results);
-}
-
-function displayWordFrequency(wordStats) {
-    const frequencyChart = document.getElementById('frequencyChart');
-    if (!frequencyChart) return;
-    
-    // Destroy previous chart if exists
-    if (window.frequencyChartInstance) {
-        window.frequencyChartInstance.destroy();
-    }
-    
-    // Get top 10 words
-    const topWords = wordStats
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-    
-    window.frequencyChartInstance = new Chart(frequencyChart.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: topWords.map(item => item[0]),
-            datasets: [{
-                label: 'Frekuensi',
-                data: topWords.map(item => item[1]),
-                backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                borderColor: 'rgba(102, 126, 234, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Kata Paling Sering Digunakan',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-}
-
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize based on current page
@@ -1465,55 +1277,12 @@ document.addEventListener('DOMContentLoaded', function() {
             break;
         case 'average.html':
             initAverageMethods();
-            // Load example data
-            const textData = document.getElementById('textData');
-            if (textData) {
-                textData.value = `85
-92
-78
-65
-88
-76
-90
-82
-79
-85
-91
-87
-83
-89
-84`;
-            }
             break;
         case 'sales.html':
-            // Load example sales data
-            const salesData = document.getElementById('salesData');
-            if (salesData) {
-                salesData.value = `Laptop,5,12000000,Jakarta,2024-01-15
-Smartphone,8,3500000,Jakarta,2024-01-16
-Tablet,3,6500000,Bandung,2024-01-16
-Laptop,2,12000000,Surabaya,2024-01-17
-Smartphone,12,3500000,Bandung,2024-01-18
-Headphone,15,800000,Jakarta,2024-01-18
-Tablet,4,6500000,Surabaya,2024-01-19
-Laptop,3,12000000,Jakarta,2024-01-20
-Smartphone,6,3500000,Surabaya,2024-01-20`;
-            }
+            loadSalesExample();
             break;
         case 'chat.html':
-            // Load example chat data
-            const chatData = document.getElementById('chatData');
-            if (chatData) {
-                chatData.value = `2024-01-15 10:30:00,Alice,Halo semuanya, apa kabar?
-2024-01-15 10:31:00,Bob,Hai Alice, kabar baik! Bagaimana denganmu?
-2024-01-15 10:32:00,Charlie,Saya juga baik, terima kasih
-2024-01-15 10:33:00,Alice,Ada yang sudah coba fitur baru?
-2024-01-15 10:34:00,Bob,Saya sudah coba, sangat menarik
-2024-01-15 10:35:00,Alice,Bagus sekali, saya juga suka
-2024-01-15 10:36:00,Charlie,Saya belum coba, nanti saya coba
-2024-01-15 10:37:00,Bob,Recomended banget fiturnya
-2024-01-15 10:38:00,Alice,Sama, saya setuju dengan Bob`;
-            }
+            loadChatExample();
             break;
     }
     

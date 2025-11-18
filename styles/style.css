@@ -2292,3 +2292,247 @@ p {
         text-align: center;
     }
 }
+
+/* ==================== FILE UPLOAD STYLES ==================== */
+.file-upload-area {
+    border: 2px dashed var(--gray-lighter);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    text-align: center;
+    background: var(--gray-lightest);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: var(--space-lg);
+    position: relative;
+}
+
+.file-upload-area:hover {
+    border-color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.file-upload-area.dragover {
+    border-color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.file-upload-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: var(--space-md);
+    pointer-events: none;
+}
+
+.file-upload-text h4 {
+    color: var(--dark-color);
+    margin-bottom: var(--space-xs);
+    pointer-events: none;
+}
+
+.file-upload-text p {
+    color: var(--gray-medium);
+    margin-bottom: var(--space-md);
+    pointer-events: none;
+}
+
+.file-upload-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.file-upload-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.file-input {
+    display: none;
+}
+
+.file-info {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    border: 1px solid var(--gray-lighter);
+    display: none;
+}
+
+.file-info.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+.file-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.file-size {
+    color: var(--gray-medium);
+    font-size: 0.9rem;
+}
+
+.file-content-preview {
+    max-height: 150px;
+    overflow-y: auto;
+    background: var(--gray-lightest);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    border: 1px solid var(--gray-lighter);
+    margin-top: var(--space-md);
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.upload-supported-formats {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: var(--space-md);
+    pointer-events: none;
+}
+
+.format-badge {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary-color);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    pointer-events: none;
+}
+
+/* Loading state */
+.file-content-preview .fa-spinner {
+    color: var(--primary-color);
+}
+
+/* Clear button styles */
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==================== BUG FIXES ==================== */
+
+/* Fix untuk process steps visibility */
+.phase-content {
+    display: none;
+    padding: var(--space-lg);
+    background: white;
+    border-top: 1px solid var(--gray-lighter);
+}
+
+.phase-content.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+.phase-header.active .phase-indicator i {
+    transform: rotate(180deg);
+}
+
+/* Fix untuk file upload area */
+.file-upload-area {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload-area.dragover {
+    border-color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.05);
+    transform: scale(1.02);
+}
+
+.file-upload-btn {
+    pointer-events: auto;
+}
+
+.file-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+}
+
+/* Enhanced file info display */
+.file-info {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    border: 1px solid var(--gray-lighter);
+    display: none;
+}
+
+.file-info.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+/* Animation for smooth transitions */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

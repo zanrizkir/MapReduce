@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles/style.css">
-    <link rel="stylesheet" href="styles/word-count.css">
+    <!-- <link rel="stylesheet" href="styles/word-count.css"> -->
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
@@ -57,17 +59,17 @@
                         <i class="fas fa-edit"></i>
                         Input Teks
                     </h3>
-                    
+
                     <div class="input-group">
                         <label class="input-label">Masukkan Teks</label>
-                        <textarea class="form-control-modern" id="textInput" rows="12" 
-                                  placeholder="Ketik atau tempel teks Anda di sini..."></textarea>
+                        <textarea class="form-control-modern" id="textInput" rows="12"
+                            placeholder="Ketik atau tempel teks Anda di sini..."></textarea>
                     </div>
-                    
+
                     <div class="input-hint">
                         <i class="fas fa-lightbulb"></i>
                         Tips: Gunakan contoh teks untuk memulai
-                        <span class="example-link" onclick="loadExample()">Muat Contoh</span>
+                        <span class="example-link" onclick="loadWordCountExample()">Muat Contoh</span>
                     </div>
 
                     <button class="btn-process" onclick="processWordCount()" id="processBtn">
@@ -82,7 +84,7 @@
                         <i class="fas fa-cogs"></i>
                         Proses MapReduce
                     </h3>
-                    
+
                     <div class="process-phase">
                         <div class="phase-header active" onclick="togglePhase('mapPhase')">
                             <div class="phase-icon">
@@ -96,11 +98,11 @@
                                 <i class="fas fa-chevron-down"></i>
                             </div>
                         </div>
-                        <div id="mapPhase" class="phase-content">
+                        <div id="mapPhase" class="phase-content show">
                             <div id="mapResults" class="process-output"></div>
                         </div>
                     </div>
-                    
+
                     <div class="process-phase">
                         <div class="phase-header" onclick="togglePhase('shufflePhase')">
                             <div class="phase-icon">
@@ -114,11 +116,11 @@
                                 <i class="fas fa-chevron-down"></i>
                             </div>
                         </div>
-                        <div id="shufflePhase" class="phase-content" style="display: none;">
+                        <div id="shufflePhase" class="phase-content">
                             <div id="shuffleResults" class="process-output"></div>
                         </div>
                     </div>
-                    
+
                     <div class="process-phase">
                         <div class="phase-header" onclick="togglePhase('reducePhase')">
                             <div class="phase-icon">
@@ -132,13 +134,13 @@
                                 <i class="fas fa-chevron-down"></i>
                             </div>
                         </div>
-                        <div id="reducePhase" class="phase-content" style="display: none;">
+                        <div id="reducePhase" class="phase-content">
                             <div id="reduceResults" class="process-output"></div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Results Section -->
             <div class="col-lg-6">
                 <div id="resultsSection" class="results-section" style="display: none;">
@@ -148,9 +150,9 @@
                             <i class="fas fa-chart-bar"></i>
                             Hasil Analisis
                         </h3>
-                        
+
                         <div id="summary" class="summary-stats"></div>
-                        
+
                         <div class="results-table-container">
                             <table class="results-table" id="resultsTable">
                                 <thead>
@@ -170,7 +172,7 @@
                             <i class="fas fa-chart-pie"></i>
                             Visualisasi Data
                         </h3>
-                        
+
                         <div class="chart-container">
                             <canvas id="wordChart" width="400" height="250"></canvas>
                         </div>
@@ -213,6 +215,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/mapreduce.js"></script>
-    <script src="js/word-count.js"></script>
+    <!-- <script src="js/word-count.js"></script> -->
 </body>
+
 </html>

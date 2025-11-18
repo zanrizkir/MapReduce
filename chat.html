@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles/style.css">
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
@@ -55,26 +57,70 @@
                 <i class="fas fa-comment-dots me-2"></i>
                 Input Data Chat
             </h3>
-            
+
+            <!-- File Upload Area -->
+            <div class="file-upload-area" id="uploadArea">
+                <div class="file-upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="file-upload-text">
+                    <h4>Upload File Chat</h4>
+                    <p>Drag & drop file atau klik untuk memilih</p>
+                    <button class="file-upload-btn" type="button">
+                        <i class="fas fa-file-upload"></i>
+                        Pilih File
+                    </button>
+                </div>
+
+                <div class="upload-supported-formats">
+                    <span class="format-badge">
+                        <i class="fas fa-file-alt"></i>TXT
+                    </span>
+                    <span class="format-badge">
+                        <i class="fas fa-file-csv"></i>CSV
+                    </span>
+                    <span class="format-badge">
+                        <i class="fab fa-whatsapp"></i>WhatsApp
+                    </span>
+                </div>
+
+                <input type="file" id="fileInput" class="file-input" accept=".txt,.csv,text/plain">
+            </div>
+
+            <!-- File Info -->
+            <div class="file-info" id="fileInfo">
+                <div class="file-info-header">
+                    <div class="file-name">
+                        <i class="fas fa-file"></i>
+                        <span id="fileName">filename.txt</span>
+                    </div>
+                    <div class="file-size" id="fileSize">0 KB</div>
+                </div>
+                <button class="btn-outline" onclick="clearUploadedFile()" type="button">
+                    <i class="fas fa-times"></i> Hapus
+                </button>
+                <div class="file-content-preview" id="fileContent">
+                    Preview konten file akan muncul di sini...
+                </div>
+            </div>
+
+            <!-- Format Selector -->
             <div class="chat-format-selector">
-                <div class="format-option active">
+                <div class="format-tab active" data-format="csv">
                     <i class="fas fa-table me-2"></i>
                     CSV Format
                 </div>
-                <div class="format-option">
-                    <i class="fas fa-file-export me-2"></i>
-                    WhatsApp Export
-                </div>
-                <div class="format-option">
-                    <i class="fas fa-upload me-2"></i>
-                    Upload File
+                <div class="format-tab" data-format="whatsapp">
+                    <i class="fab fa-whatsapp me-2"></i>
+                    WhatsApp Format
                 </div>
             </div>
 
             <div class="chat-data-input">
                 <label class="form-label">Data Chat (Format CSV):</label>
-                <textarea class="chat-textarea" id="chatData" rows="12" placeholder="timestamp,user,message&#10;2024-01-15 10:30:00,Alice,Halo semuanya&#10;2024-01-15 10:31:00,Bob,Hai Alice, apa kabar?"></textarea>
-                
+                <textarea class="chat-textarea" id="chatData" rows="12"
+                    placeholder="timestamp,user,message&#10;2024-01-15 10:30:00,Alice,Pesan dari Alice&#10;2024-01-15 10:31:00,Bob,Pesan dari Bob"></textarea>
+
                 <div class="format-guide">
                     <h5 class="guide-title">
                         <i class="fas fa-info-circle me-2"></i>
@@ -88,7 +134,7 @@
                 </div>
             </div>
 
-            <button class="btn-process" onclick="processChatData()" id="processChatBtn">
+            <button class="btn-process" onclick="processChatData()" id="processChatBtn" type="button">
                 <i class="fas fa-chart-bar"></i>
                 Analisis Chat
             </button>
@@ -219,4 +265,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/mapreduce.js"></script>
 </body>
+
 </html>

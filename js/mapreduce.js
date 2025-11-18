@@ -2,7 +2,7 @@
 class MapReduceEngine {
     static mapReduce(data, mapper, reducer) {
         let mapped = [];
-        
+
         // Map Phase
         data.forEach((line, index) => {
             const results = mapper(line, index + 1);
@@ -14,21 +14,21 @@ class MapReduceEngine {
                 mapped.push(results);
             }
         });
-        
+
         // Shuffle Phase
         let shuffled = {};
         mapped.forEach(([key, value]) => {
             if (!shuffled[key]) shuffled[key] = [];
             shuffled[key].push(value);
         });
-        
+
         // Reduce Phase
         let results = [];
         Object.entries(shuffled).forEach(([key, values]) => {
             const result = reducer(key, values);
             results.push([key, result]);
         });
-        
+
         return {
             mapped: mapped,
             shuffled: shuffled,
@@ -72,54 +72,62 @@ function displayProcessSteps(steps, mapId, shuffleId, reduceId) {
     // Map Phase
     const mapResults = document.getElementById(mapId);
     if (mapResults) {
-        mapResults.innerHTML = steps.mapped.slice(0, 50).map(item => 
+        mapResults.innerHTML = steps.mapped.slice(0, 50).map(item =>
             `<div class="mb-1"><code>("${item[0]}", ${item[1]})</code></div>`
         ).join('');
-        
+
         if (steps.mapped.length > 50) {
             mapResults.innerHTML += `<div class="text-muted">... dan ${steps.mapped.length - 50} data lainnya</div>`;
         }
     }
-    
+
     // Shuffle Phase
     const shuffleResults = document.getElementById(shuffleId);
     if (shuffleResults) {
-        shuffleResults.innerHTML = Object.entries(steps.shuffled).map(([key, values]) => 
+        shuffleResults.innerHTML = Object.entries(steps.shuffled).map(([key, values]) =>
             `<div class="mb-1"><strong>"${key}":</strong> [${values.join(', ')}]</div>`
         ).join('');
     }
-    
+
     // Reduce Phase
     const reduceResults = document.getElementById(reduceId);
     if (reduceResults) {
-        reduceResults.innerHTML = steps.results.map(item => 
+        reduceResults.innerHTML = steps.results.map(item =>
             `<div class="mb-1"><code>"${item[0]}" → ${item[1]}</code></div>`
         ).join('');
     }
 }
 
-// Toggle process phase visibility
+// Enhanced toggle phase function
 function togglePhase(phaseId) {
     const phaseContent = document.getElementById(phaseId);
-    const phaseHeader = phaseContent.previousElementSibling;
-    
+    const phaseHeader = phaseContent?.previousElementSibling;
+
     if (phaseContent && phaseHeader) {
         // Toggle current phase
-        phaseContent.classList.toggle('show');
-        phaseHeader.classList.toggle('active');
-        
+        const isShowing = phaseContent.classList.contains('show');
+
+        if (isShowing) {
+            phaseContent.classList.remove('show');
+            phaseHeader.classList.remove('active');
+        } else {
+            phaseContent.classList.add('show');
+            phaseHeader.classList.add('active');
+        }
+
         // Update indicator
         const indicator = phaseHeader.querySelector('.phase-indicator i');
-        if (phaseContent.classList.contains('show')) {
-            indicator.classList.remove('fa-chevron-down');
-            indicator.classList.add('fa-chevron-up');
-        } else {
-            indicator.classList.remove('fa-chevron-up');
-            indicator.classList.add('fa-chevron-down');
+        if (indicator) {
+            if (phaseContent.classList.contains('show')) {
+                indicator.classList.remove('fa-chevron-down');
+                indicator.classList.add('fa-chevron-up');
+            } else {
+                indicator.classList.remove('fa-chevron-up');
+                indicator.classList.add('fa-chevron-down');
+            }
         }
     }
 }
-
 // ==================== WORD COUNT FUNCTIONS ====================
 function loadWordCountExample() {
     const exampleText = `Halo dunia! Ini adalah contoh analisis word count
@@ -149,7 +157,7 @@ function processWordCount() {
 
     const text = textInput.value;
     const lines = text.split('\n').filter(line => line.trim());
-    
+
     if (lines.length === 0) {
         alert('Masukkan teks terlebih dahulu!');
         return;
@@ -172,28 +180,28 @@ function processWordCount() {
 
         // Execute MapReduce
         const result = MapReduceEngine.mapReduce(lines, wordMapper, wordReducer);
-        
+
         // Display results
         displayWordCountResults(result);
         displayProcessSteps(result, 'mapResults', 'shuffleResults', 'reduceResults');
         createWordCountChart(result.results);
-        
+
         // Show sections
         showSection('resultsSection');
         showSection('processSteps');
         hideSection('initialState');
         hideLoading(processBtn, originalText);
-        
+
         // Auto-expand map phase
         setTimeout(() => togglePhase('mapPhase'), 100);
-        
+
     }, 1000);
 }
 
 function displayWordCountResults(result) {
     const totalWords = result.results.reduce((sum, [_, count]) => sum + count, 0);
     const uniqueWords = result.results.length;
-    
+
     const summary = document.getElementById('summary');
     if (summary) {
         summary.innerHTML = `
@@ -207,11 +215,11 @@ function displayWordCountResults(result) {
             </div>
         `;
     }
-    
+
     const tbody = document.querySelector('#resultsTable tbody');
     if (tbody) {
         tbody.innerHTML = '';
-        
+
         // Sort by frequency descending and take top 20
         result.results
             .sort((a, b) => b[1] - a[1])
@@ -234,17 +242,17 @@ function displayWordCountResults(result) {
 function createWordCountChart(results) {
     const ctx = document.getElementById('wordChart');
     if (!ctx) return;
-    
+
     // Destroy previous chart if exists
     if (window.wordChartInstance) {
         window.wordChartInstance.destroy();
     }
-    
+
     // Get top 8 words
     const topWords = results
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8);
-    
+
     window.wordChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -310,7 +318,7 @@ let averageChart = null;
 
 function initAverageMethods() {
     document.querySelectorAll('.method-card').forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function () {
             document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
         });
@@ -322,7 +330,7 @@ function addNumber() {
     if (!input) return;
 
     const value = parseFloat(input.value);
-    
+
     if (!isNaN(value)) {
         numbers.push(value);
         updateNumbersList();
@@ -334,9 +342,9 @@ function addNumber() {
 function updateNumbersList() {
     const list = document.getElementById('numbersList');
     if (!list) return;
-    
+
     list.innerHTML = '';
-    
+
     numbers.forEach((num, index) => {
         const numberItem = document.createElement('div');
         numberItem.className = 'number-item';
@@ -361,7 +369,7 @@ function processTextData() {
 
     const text = textData.value;
     const lines = text.split('\n').filter(line => line.trim());
-    
+
     if (lines.length === 0) {
         alert('Masukkan data terlebih dahulu!');
         return;
@@ -401,38 +409,38 @@ function processNumbers(data) {
 
         // Execute MapReduce
         const result = MapReduceEngine.mapReduce(data, averageMapper, averageReducer);
-        
+
         // Calculate results
         const sum = result.results.find(([key]) => key === 'sum')[1];
         const count = result.results.find(([key]) => key === 'count')[1];
         const average = sum / count;
-        
+
         // Find min and max
         const min = Math.min(...data);
         const max = Math.max(...data);
         const range = max - min;
-        
+
         // Display results
         displayAverageResults(sum, count, average, min, max, range, data);
         displayProcessSteps(result, 'mapResults', 'shuffleResults', 'reduceResults');
         createAverageChart(data);
-        
+
         // Show sections
         showSection('resultsSection');
         showSection('processSteps');
         hideSection('initialState');
         hideLoading(processBtn, originalText);
-        
+
         // Auto-expand map phase
         setTimeout(() => togglePhase('mapPhase'), 100);
-        
+
     }, 800);
 }
 
 function displayAverageResults(sum, count, average, min, max, range, data) {
     const resultsGrid = document.getElementById('resultsGrid');
     const statsList = document.getElementById('statsList');
-    
+
     if (resultsGrid) {
         resultsGrid.innerHTML = `
             <div class="result-item">
@@ -461,17 +469,17 @@ function displayAverageResults(sum, count, average, min, max, range, data) {
             </div>
         `;
     }
-    
+
     if (statsList) {
         // Calculate additional statistics
         const sortedData = [...data].sort((a, b) => a - b);
-        const median = sortedData.length % 2 === 0 
-            ? (sortedData[sortedData.length/2 - 1] + sortedData[sortedData.length/2]) / 2
-            : sortedData[Math.floor(sortedData.length/2)];
-        
+        const median = sortedData.length % 2 === 0
+            ? (sortedData[sortedData.length / 2 - 1] + sortedData[sortedData.length / 2]) / 2
+            : sortedData[Math.floor(sortedData.length / 2)];
+
         const variance = data.reduce((acc, val) => acc + Math.pow(val - average, 2), 0) / data.length;
         const stdDev = Math.sqrt(variance);
-        
+
         statsList.innerHTML = `
             <div class="stat-detail">
                 <span class="stat-name">Median</span>
@@ -496,31 +504,31 @@ function displayAverageResults(sum, count, average, min, max, range, data) {
 function createAverageChart(data) {
     const ctx = document.getElementById('dataChart');
     if (!ctx) return;
-    
+
     // Destroy previous chart if exists
     if (averageChart) {
         averageChart.destroy();
     }
-    
+
     // Create histogram data
     const min = Math.min(...data);
     const max = Math.max(...data);
     const range = max - min;
     const binCount = Math.min(10, data.length);
     const binSize = range / binCount;
-    
+
     const histogram = Array(binCount).fill(0);
     data.forEach(value => {
         const binIndex = Math.min(Math.floor((value - min) / binSize), binCount - 1);
         histogram[binIndex]++;
     });
-    
-    const labels = Array.from({length: binCount}, (_, i) => {
+
+    const labels = Array.from({ length: binCount }, (_, i) => {
         const start = min + i * binSize;
         const end = min + (i + 1) * binSize;
         return `${start.toFixed(1)} - ${end.toFixed(1)}`;
     });
-    
+
     averageChart = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -588,7 +596,7 @@ function processSalesData() {
 
     const text = salesData.value;
     const lines = text.split('\n').filter(line => line.trim());
-    
+
     if (lines.length === 0) {
         alert('Masukkan data penjualan terlebih dahulu!');
         return;
@@ -620,11 +628,11 @@ function processSalesData() {
             processSalesByProduct(sales);
             processSalesByRegion(sales);
             processSalesSummary(sales);
-            
+
             hideLoading(processBtn, originalText);
             showSection('salesResults');
             hideSection('salesEmptyState');
-            
+
         } catch (error) {
             alert('Error memproses data: ' + error.message);
             hideLoading(processBtn, originalText);
@@ -667,7 +675,7 @@ function processSalesSummary(sales) {
     const totalQuantity = sales.reduce((sum, sale) => sum + sale.quantity, 0);
     const uniqueProducts = [...new Set(sales.map(sale => sale.product))].length;
     const uniqueRegions = [...new Set(sales.map(sale => sale.region))].length;
-    
+
     displaySalesSummary(totalSales, totalQuantity, uniqueProducts, uniqueRegions);
 }
 
@@ -699,10 +707,10 @@ function displayProductSales(productSales) {
     const tableBody = document.querySelector('#productsTable tbody');
     if (tableBody) {
         tableBody.innerHTML = '';
-        
+
         const sortedProducts = productSales.sort((a, b) => b[1] - a[1]).slice(0, 10);
         const maxSales = sortedProducts[0]?.[1] || 1;
-        
+
         sortedProducts.forEach(([product, total], index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -726,9 +734,9 @@ function displayRegionSales(regionSales) {
     const regionsGrid = document.getElementById('regionsGrid');
     if (regionsGrid) {
         regionsGrid.innerHTML = '';
-        
+
         const totalSales = regionSales.reduce((sum, [_, total]) => sum + total, 0);
-        
+
         regionSales
             .sort((a, b) => b[1] - a[1])
             .forEach(([region, total]) => {
@@ -758,14 +766,14 @@ function displayRegionSales(regionSales) {
 function createProductChart(productSales) {
     const ctx = document.getElementById('productChart');
     if (!ctx) return;
-    
+
     // Destroy previous chart if exists
     if (window.productChartInstance) {
         window.productChartInstance.destroy();
     }
-    
+
     const sortedProducts = productSales.sort((a, b) => b[1] - a[1]).slice(0, 8);
-    
+
     window.productChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -802,7 +810,7 @@ function createProductChart(productSales) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return `Rp ${context.parsed.y.toLocaleString('id-ID')}`;
                         }
                     }
@@ -812,7 +820,7 @@ function createProductChart(productSales) {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: function(value) {
+                        callback: function (value) {
                             return 'Rp ' + value.toLocaleString('id-ID');
                         }
                     }
@@ -825,12 +833,12 @@ function createProductChart(productSales) {
 function createRegionChart(regionSales) {
     const ctx = document.getElementById('regionChart');
     if (!ctx) return;
-    
+
     // Destroy previous chart if exists
     if (window.regionChartInstance) {
         window.regionChartInstance.destroy();
     }
-    
+
     window.regionChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'doughnut',
         data: {
@@ -867,7 +875,7 @@ function createRegionChart(regionSales) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             const value = context.parsed;
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = ((value / total) * 100).toFixed(1);
@@ -902,7 +910,7 @@ function processChatData() {
 
     const text = chatData.value;
     const lines = text.split('\n').filter(line => line.trim());
-    
+
     if (lines.length === 0) {
         alert('Masukkan data chat terlebih dahulu!');
         return;
@@ -935,11 +943,11 @@ function processChatData() {
             processWordFrequency(messages);
             processActivityTimeline(messages);
             createSentimentChart();
-            
+
             hideLoading(processBtn, originalText);
             showSection('chatResults');
             hideSection('chatEmptyState');
-            
+
         } catch (error) {
             alert('Error memproses data: ' + error.message);
             hideLoading(processBtn, originalText);
@@ -952,7 +960,7 @@ function processChatStatistics(messages) {
     const uniqueUsers = [...new Set(messages.map(msg => msg.user))].length;
     const totalWords = messages.reduce((sum, msg) => sum + msg.words, 0);
     const avgWordsPerMessage = totalWords / totalMessages;
-    
+
     displayChatStatistics(totalMessages, uniqueUsers, totalWords, avgWordsPerMessage);
 }
 
@@ -999,14 +1007,14 @@ function displayParticipantAnalysis(participantStats, messages) {
     const participantList = document.getElementById('participantList');
     if (participantList) {
         participantList.innerHTML = '';
-        
+
         participantStats
             .sort((a, b) => b[1] - a[1])
             .forEach(([user, messageCount]) => {
                 const userMessages = messages.filter(msg => msg.user === user);
                 const wordCount = userMessages.reduce((sum, msg) => sum + msg.words, 0);
                 const avgWords = wordCount / messageCount;
-                
+
                 const participantItem = document.createElement('div');
                 participantItem.className = 'participant-item';
                 participantItem.innerHTML = `
@@ -1029,10 +1037,10 @@ function displayParticipantAnalysis(participantStats, messages) {
 
 function processWordFrequency(messages) {
     // Extract all words from messages
-    const allWords = messages.flatMap(msg => 
+    const allWords = messages.flatMap(msg =>
         msg.message.toLowerCase().match(/\b\w+\b/g) || []
     );
-    
+
     // MapReduce for word frequency
     function wordMapper(word, index) {
         return [word, 1];
@@ -1049,19 +1057,19 @@ function processWordFrequency(messages) {
 function displayWordFrequency(wordStats) {
     const frequencyChart = document.getElementById('frequencyChart');
     if (!frequencyChart) return;
-    
+
     // Destroy previous chart if exists
     if (window.frequencyChartInstance) {
         window.frequencyChartInstance.destroy();
     }
-    
+
     // Get top 10 words (exclude common words)
     const commonWords = ['yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'pada', 'dengan', 'ini', 'itu', 'tidak', 'ada'];
     const topWords = wordStats
         .filter(([word]) => !commonWords.includes(word.toLowerCase()))
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10);
-    
+
     window.frequencyChartInstance = new Chart(frequencyChart.getContext('2d'), {
         type: 'bar',
         data: {
@@ -1111,21 +1119,21 @@ function processActivityTimeline(messages) {
             hourlyActivity[msg.hour]++;
         }
     });
-    
+
     createTimelineChart(hourlyActivity);
 }
 
 function createTimelineChart(hourlyActivity) {
     const ctx = document.getElementById('timelineChart');
     if (!ctx) return;
-    
+
     // Destroy previous chart if exists
     if (window.timelineChartInstance) {
         window.timelineChartInstance.destroy();
     }
-    
-    const labels = Array.from({length: 24}, (_, i) => `${i.toString().padStart(2, '0')}:00`);
-    
+
+    const labels = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
+
     window.timelineChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
@@ -1175,14 +1183,14 @@ function createTimelineChart(hourlyActivity) {
 function createParticipantChart(participantStats) {
     const ctx = document.getElementById('participantChart');
     if (!ctx) return;
-    
+
     // Destroy previous chart if exists
     if (window.participantChartInstance) {
         window.participantChartInstance.destroy();
     }
-    
+
     const topParticipants = participantStats.sort((a, b) => b[1] - a[1]).slice(0, 8);
-    
+
     window.participantChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'pie',
         data: {
@@ -1224,12 +1232,12 @@ function createParticipantChart(participantStats) {
 function createSentimentChart() {
     const ctx = document.getElementById('sentimentChart');
     if (!ctx) return;
-    
+
     // Destroy previous chart if exists
     if (window.sentimentChartInstance) {
         window.sentimentChartInstance.destroy();
     }
-    
+
     // This is a placeholder - in real implementation, you'd analyze sentiment
     window.sentimentChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'doughnut',
@@ -1268,29 +1276,41 @@ function createSentimentChart() {
 
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing MapReduce Analytics...');
+    
     // Initialize based on current page
     const currentPage = window.location.pathname.split('/').pop();
     
     switch(currentPage) {
         case 'word-count.html':
+            console.log('📝 Initializing Word Count page');
             loadWordCountExample();
             break;
         case 'average.html':
+            console.log('🧮 Initializing Average Calculator page');
             initAverageMethods();
             break;
         case 'sales.html':
+            console.log('📊 Initializing Sales Analysis page');
             loadSalesExample();
             break;
         case 'chat.html':
+            console.log('💬 Initializing Chat Analysis page');
             loadChatExample();
+            initChatPage(); // Single initialization function
             break;
+        default:
+            console.log('🏠 Initializing Dashboard');
+            // Dashboard initialization if needed
     }
     
-    // Add event listener for Enter key in textareas
+    // Add keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey && e.key === 'Enter') {
             const activeElement = document.activeElement;
             if (activeElement && activeElement.tagName === 'TEXTAREA') {
+                console.log('⌨️ Ctrl+Enter detected on textarea');
+                
                 if (activeElement.id === 'textInput') {
                     processWordCount();
                 } else if (activeElement.id === 'textData') {
@@ -1303,4 +1323,292 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    console.log('✅ MapReduce Analytics initialized successfully');
 });
+
+// ==================== ENHANCED FILE UPLOAD FUNCTIONS ====================
+let currentFormat = 'csv';
+
+function initChatPage() {
+    console.log('🔧 Initializing chat page...');
+
+    // Initialize format selector
+    initChatFormatSelector();
+
+    // Initialize file upload
+    initFileUpload();
+
+    console.log('✅ Chat page initialized successfully');
+}
+
+function initChatFormatSelector() {
+    const formatTabs = document.querySelectorAll('.format-tab');
+
+    formatTabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+            const format = this.getAttribute('data-format');
+
+            // Update active tab
+            formatTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // Update format
+            currentFormat = format;
+            updateChatUI();
+
+            console.log('Format changed to:', format);
+        });
+    });
+}
+
+function updateChatUI() {
+    const chatData = document.getElementById('chatData');
+    const formatGuide = document.querySelector('.format-guide');
+
+    if (!chatData || !formatGuide) return;
+
+    if (currentFormat === 'whatsapp') {
+        chatData.placeholder = `[dd/mm/yy, hh:mm] Nama: Pesan\n[15/01/24, 10:30] Alice: Halo semua\n[15/01/24, 10:31] Bob: Hai Alice`;
+
+        formatGuide.innerHTML = `
+            <h5 class="guide-title">
+                <i class="fas fa-info-circle me-2"></i>
+                Panduan Format WhatsApp
+            </h5>
+            <div class="format-examples">
+                <div class="format-example">[dd/mm/yy, hh:mm] Nama: Pesan</div>
+                <div class="format-example">[15/01/24, 10:30] Alice: Halo semua</div>
+                <div class="format-example">[15/01/24, 10:31] Bob: Hai Alice, apa kabar?</div>
+            </div>
+        `;
+    } else {
+        chatData.placeholder = `timestamp,user,message\n2024-01-15 10:30:00,Alice,Pesan dari Alice\n2024-01-15 10:31:00,Bob,Pesan dari Bob`;
+
+        formatGuide.innerHTML = `
+            <h5 class="guide-title">
+                <i class="fas fa-info-circle me-2"></i>
+                Panduan Format CSV
+            </h5>
+            <div class="format-examples">
+                <div class="format-example">timestamp,user,message</div>
+                <div class="format-example">2024-01-15 10:30:00,Alice,Pesan dari Alice</div>
+                <div class="format-example">2024-01-15 10:31:00,Bob,Pesan dari Bob</div>
+            </div>
+        `;
+    }
+}
+
+function initFileUpload() {
+    console.log('🚀 Initializing file upload...');
+
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileContent = document.getElementById('fileContent');
+    const chatData = document.getElementById('chatData');
+    const uploadBtn = uploadArea?.querySelector('.file-upload-btn');
+
+    // Check if elements exist
+    if (!fileInput || !uploadArea) {
+        console.error('❌ Required elements not found');
+        return;
+    }
+
+    console.log('✅ Elements found, setting up event listeners...');
+
+    // 1. Click on upload button -> trigger file input click
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            console.log('📁 Upload button clicked');
+            fileInput.click();
+        });
+    }
+
+    // 2. Click on upload area -> trigger file input click
+    uploadArea.addEventListener('click', function (e) {
+        if (e.target !== uploadBtn && !uploadBtn?.contains(e.target)) {
+            console.log('📁 Upload area clicked');
+            fileInput.click();
+        }
+    });
+
+    // 3. File input change event
+    fileInput.addEventListener('change', function (e) {
+        console.log('📄 File selected:', e.target.files[0]?.name);
+        if (e.target.files.length > 0) {
+            handleFileSelection(e.target.files[0]);
+        }
+    });
+
+    // 4. Drag and drop functionality
+    uploadArea.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.add('dragover');
+        console.log('📦 File dragged over');
+    });
+
+    uploadArea.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('dragover');
+        console.log('📦 File dragged out');
+    });
+
+    uploadArea.addEventListener('drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('dragover');
+        console.log('📦 File dropped');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelection(files[0]);
+        }
+    });
+
+    function handleFileSelection(file) {
+        console.log('🔄 Handling file:', file.name);
+
+        // Basic validation
+        if (!file.name.match(/\.(txt|csv)$/i)) {
+            alert('❌ Hanya file .txt atau .csv yang didukung!');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            alert('❌ File terlalu besar! Maksimal 5MB.');
+            return;
+        }
+
+        // Show file info
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.style.display = 'block';
+
+        // Show loading
+        fileContent.innerHTML = '<div style="text-align: center; color: #667eea; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Membaca file...</div>';
+
+        // Read file
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            console.log('✅ File read successfully');
+            const content = e.target.result;
+
+            // Show preview (first 500 characters)
+            const preview = content.length > 500 ? content.substring(0, 500) + '...' : content;
+            fileContent.textContent = preview;
+
+            // Process and fill textarea
+            processAndFillTextarea(content, chatData);
+        };
+
+        reader.onerror = function () {
+            console.error('❌ Error reading file');
+            alert('❌ Gagal membaca file!');
+            fileContent.textContent = 'Error membaca file';
+        };
+
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    function processAndFillTextarea(content, textarea) {
+        console.log('🔄 Processing file content...');
+
+        const lines = content.split('\n').filter(line => line.trim());
+
+        if (lines.length === 0) {
+            alert('❌ File kosong!');
+            return;
+        }
+
+        let processedContent = '';
+
+        // Detect format automatically
+        const isWhatsApp = lines.some(line =>
+            line.match(/\[\d{1,2}\/\d{1,2}\/\d{2,4},?\s+\d{1,2}\.\d{2}\]/) ||
+            line.match(/\[\d{1,2}\/\d{1,2}\/\d{2,4},?\s+\d{1,2}:\d{2}\]/) ||
+            line.match(/\d{1,2}\/\d{1,2}\/\d{2,4},?\s+\d{1,2}:\d{2}\s*-\s*/)
+        );
+
+        if (isWhatsApp) {
+            console.log('📱 WhatsApp format detected');
+            processedContent = content;
+
+            // Auto-switch to WhatsApp format
+            switchToWhatsAppFormat();
+        } else {
+            // Check if it's CSV format (has comma separators with expected columns)
+            const isCSV = lines[0].includes(',') && lines[0].split(',').length >= 2;
+
+            if (isCSV) {
+                console.log('📊 CSV format detected');
+                processedContent = content;
+            } else {
+                console.log('📝 Plain text detected, converting to CSV');
+                // Convert plain text to CSV format
+                processedContent = lines.map((line, index) => {
+                    const now = new Date();
+                    const timestamp = new Date(now.getTime() + index * 60000)
+                        .toISOString()
+                        .replace('T', ' ')
+                        .split('.')[0];
+                    return `${timestamp},User${(index % 3) + 1},${line.trim()}`;
+                }).join('\n');
+            }
+        }
+
+        // Fill textarea
+        textarea.value = processedContent;
+
+        // Trigger resize
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+
+        console.log('✅ Textarea filled with processed content');
+    }
+
+    function switchToWhatsAppFormat() {
+        const csvTab = document.querySelector('[data-format="csv"]');
+        const whatsappTab = document.querySelector('[data-format="whatsapp"]');
+
+        if (csvTab && whatsappTab) {
+            csvTab.classList.remove('active');
+            whatsappTab.classList.add('active');
+            currentFormat = 'whatsapp';
+            updateChatUI();
+            console.log('🔄 Switched to WhatsApp format');
+        }
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function clearUploadedFile() {
+    console.log('🗑️ Clearing uploaded file...');
+
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const chatData = document.getElementById('chatData');
+
+    fileInput.value = '';
+    if (fileInfo) {
+        fileInfo.style.display = 'none';
+    }
+    if (chatData) {
+        chatData.value = '';
+    }
+
+    console.log('✅ File cleared');
+}

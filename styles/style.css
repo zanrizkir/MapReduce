@@ -816,13 +816,15 @@ p {
 }
 
 .phase-content {
+    display: none;
     padding: var(--space-lg);
     background: white;
-    display: none;
+    border-top: 1px solid var(--gray-lighter);
 }
 
 .phase-content.show {
     display: block;
+    animation: slideDown 0.3s ease;
 }
 
 .process-output {
@@ -1296,7 +1298,7 @@ p {
 
 .format-example {
     font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--gray-dark);
     background: white;
     padding: var(--space-sm);
@@ -1580,7 +1582,7 @@ p {
     flex-wrap: wrap;
 }
 
-.format-option {
+.format-tab {
     padding: var(--space-md) var(--space-lg);
     background: var(--gray-lightest);
     border: 2px solid var(--gray-lighter);
@@ -1593,13 +1595,13 @@ p {
     gap: var(--space-sm);
 }
 
-.format-option.active {
+.format-tab.active {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
 }
 
-.format-option:hover:not(.active) {
+.format-tab:hover:not(.active) {
     border-color: var(--primary-color);
     color: var(--primary-color);
 }
@@ -2096,12 +2098,217 @@ p {
     }
     
     .method-tab,
-    .format-option {
+    .format-tab {
         justify-content: center;
     }
     
     .manual-input {
         grid-template-columns: 1fr;
+    }
+    
+    /* ==================== MOBILE FIXES ==================== */
+    
+    /* Fix untuk input methods di average page */
+    .manual-input {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .manual-input .number-input {
+        width: 100%;
+    }
+    
+    .manual-input .add-btn {
+        width: 100%;
+    }
+    
+    /* Fix untuk sales summary */
+    .sales-summary {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .summary-card {
+        padding: 15px;
+    }
+    
+    .summary-value {
+        font-size: 1.5rem;
+    }
+    
+    /* Fix untuk charts section */
+    .charts-section {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .chart-card {
+        padding: 15px;
+    }
+    
+    /* Fix untuk file upload di mobile */
+    .file-upload-area {
+        padding: 20px 15px;
+    }
+    
+    .file-upload-text h4 {
+        font-size: 1.2rem;
+    }
+    
+    .file-upload-text p {
+        font-size: 0.9rem;
+    }
+    
+    .file-upload-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+    }
+    
+    /* Fix untuk format selector */
+    .chat-format-selector {
+        flex-direction: column;
+    }
+    
+    .format-tab {
+        text-align: center;
+        justify-content: center;
+    }
+    
+    /* Fix untuk results grid di average */
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .result-item {
+        padding: 15px;
+    }
+    
+    .result-value {
+        font-size: 1.5rem;
+    }
+    
+    /* AVERAGE PAGE MOBILE FIXES */
+    .average-container {
+        padding: 15px;
+    }
+    
+    .average-title {
+        font-size: 2rem;
+    }
+    
+    .average-subtitle {
+        font-size: 1rem;
+    }
+    
+    /* Fix input methods layout */
+    .input-methods {
+        gap: 20px;
+    }
+    
+    .method-card {
+        padding: 20px;
+    }
+    
+    .method-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .method-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+    
+    /* Fix manual input */
+    .manual-input {
+        flex-direction: column;
+    }
+    
+    .number-input, .add-btn {
+        width: 100%;
+    }
+    
+    /* Fix results grid */
+    .results-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .result-item {
+        padding: 15px 10px;
+    }
+    
+    .result-value {
+        font-size: 1.4rem;
+    }
+    
+    /* SALES PAGE MOBILE FIXES */
+    .sales-container {
+        padding: 15px;
+    }
+    
+    .sales-title {
+        font-size: 2rem;
+    }
+    
+    .sales-subtitle {
+        font-size: 1rem;
+    }
+    
+    /* Fix sales summary */
+    .sales-summary {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .summary-card {
+        padding: 15px 10px;
+    }
+    
+    .summary-value {
+        font-size: 1.4rem;
+    }
+    
+    .summary-label {
+        font-size: 0.8rem;
+    }
+    
+    /* Fix charts */
+    .charts-section {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .chart-card {
+        padding: 15px;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+    
+    /* Fix table responsiveness */
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+    
+    .products-table th,
+    .products-table td {
+        padding: 8px 5px;
+    }
+    
+    /* Fix regions grid */
+    .regions-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .region-card {
+        padding: 15px;
     }
 }
 
@@ -2156,6 +2363,179 @@ p {
     .products-table th,
     .products-table td {
         padding: var(--space-sm);
+    }
+    
+    /* Mobile small fixes */
+    .sales-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .file-upload-icon {
+        font-size: 2.5rem;
+    }
+    
+    .upload-supported-formats {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .format-badge {
+        width: 80px;
+        justify-content: center;
+    }
+    
+    /* AVERAGE & SALES EXTRA SMALL FIXES */
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sales-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .result-item, .summary-card {
+        padding: 15px;
+    }
+    
+    .result-value, .summary-value {
+        font-size: 1.6rem;
+    }
+}
+
+/* Fix khusus untuk input file di iOS */
+input[type="file"] {
+    /* Reset style untuk konsistensi di semua device */
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+/* Enhanced file input untuk mobile */
+.file-input-mobile {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+    font-size: 100px; /* Membuat area click lebih besar di mobile */
+}
+
+/* Fix untuk touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .file-upload-area {
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .file-upload-btn {
+        padding: 15px 25px;
+        font-size: 1.1rem;
+    }
+    
+    /* Improve touch targets */
+    .nav-link {
+        padding: 12px 15px !important;
+    }
+    
+    .btn-process {
+        padding: 16px 20px;
+        font-size: 1.1rem;
+    }
+    
+    .method-tab, .format-tab {
+        padding: 15px 20px;
+        font-size: 1rem;
+    }
+    
+    .number-input, .data-textarea, .sales-textarea, .chat-textarea {
+        font-size: 16px; /* Prevent zoom on iOS */
+        min-height: 44px;
+    }
+}
+
+/* ==================== BUG FIXES ==================== */
+
+/* Fix untuk process steps visibility */
+.phase-content {
+    display: none;
+    padding: var(--space-lg);
+    background: white;
+    border-top: 1px solid var(--gray-lighter);
+}
+
+.phase-content.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+.phase-header.active .phase-indicator i {
+    transform: rotate(180deg);
+}
+
+/* Fix untuk file upload area */
+.file-upload-area {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload-area.dragover {
+    border-color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.05);
+    transform: scale(1.02);
+}
+
+.file-upload-btn {
+    pointer-events: auto;
+}
+
+.file-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+}
+
+/* Enhanced file info display */
+.file-info {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    margin-top: var(--space-md);
+    border: 1px solid var(--gray-lighter);
+    display: none;
+}
+
+.file-info.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+/* Animation for smooth transitions */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -2224,6 +2604,7 @@ p {
     background: linear-gradient(45deg, #ffffff, #d4f3ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .enhanced-hero-subtitle {
@@ -2453,79 +2834,6 @@ p {
     color: white;
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ==================== BUG FIXES ==================== */
-
-/* Fix untuk process steps visibility */
-.phase-content {
-    display: none;
-    padding: var(--space-lg);
-    background: white;
-    border-top: 1px solid var(--gray-lighter);
-}
-
-.phase-content.show {
-    display: block;
-    animation: slideDown 0.3s ease;
-}
-
-.phase-header.active .phase-indicator i {
-    transform: rotate(180deg);
-}
-
-/* Fix untuk file upload area */
-.file-upload-area {
-    position: relative;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.file-upload-area.dragover {
-    border-color: var(--primary-color);
-    background: rgba(102, 126, 234, 0.05);
-    transform: scale(1.02);
-}
-
-.file-upload-btn {
-    pointer-events: auto;
-}
-
-.file-input {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    cursor: pointer;
-}
-
-/* Enhanced file info display */
-.file-info {
-    background: white;
-    border-radius: var(--radius-lg);
-    padding: var(--space-md);
-    margin-top: var(--space-md);
-    border: 1px solid var(--gray-lighter);
-    display: none;
-}
-
-.file-info.show {
-    display: block;
-    animation: slideDown 0.3s ease;
-}
-
-/* Animation for smooth transitions */
 @keyframes slideDown {
     from {
         opacity: 0;

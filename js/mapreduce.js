@@ -1275,13 +1275,13 @@ function createSentimentChart() {
 }
 
 // ==================== INITIALIZATION ====================
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Initializing MapReduce Analytics...');
-    
+
     // Initialize based on current page
     const currentPage = window.location.pathname.split('/').pop();
-    
-    switch(currentPage) {
+
+    switch (currentPage) {
         case 'word-count.html':
             console.log('📝 Initializing Word Count page');
             loadWordCountExample();
@@ -1301,16 +1301,16 @@ document.addEventListener('DOMContentLoaded', function() {
             break;
         default:
             console.log('🏠 Initializing Dashboard');
-            // Dashboard initialization if needed
+        // Dashboard initialization if needed
     }
-    
+
     // Add keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.ctrlKey && e.key === 'Enter') {
             const activeElement = document.activeElement;
             if (activeElement && activeElement.tagName === 'TEXTAREA') {
                 console.log('⌨️ Ctrl+Enter detected on textarea');
-                
+
                 if (activeElement.id === 'textInput') {
                     processWordCount();
                 } else if (activeElement.id === 'textData') {
@@ -1323,7 +1323,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     console.log('✅ MapReduce Analytics initialized successfully');
 });
 
@@ -1401,7 +1401,6 @@ function updateChatUI() {
 
 function initFileUpload() {
     console.log('🚀 Initializing file upload...');
-
     const fileInput = document.getElementById('fileInput');
     const uploadArea = document.getElementById('uploadArea');
     const fileInfo = document.getElementById('fileInfo');

@@ -42,6 +42,14 @@ function formatCurrency(amount) {
     return 'Rp ' + amount.toLocaleString('id-ID');
 }
 
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
 function showLoading(button) {
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
@@ -128,6 +136,32 @@ function togglePhase(phaseId) {
         }
     }
 }
+
+// Mobile detection and fixes
+function isMobileDevice() {
+    return (typeof window.orientation !== "undefined") || 
+           (navigator.userAgent.indexOf('IEMobile') !== -1) ||
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+function applyMobileFixes() {
+    if (isMobileDevice()) {
+        console.log('📱 Applying mobile-specific fixes...');
+        
+        // Improve button sizes for touch
+        document.querySelectorAll('.btn-process, .file-upload-btn, .add-btn').forEach(btn => {
+            btn.style.minHeight = '44px';
+            btn.style.padding = '12px 20px';
+        });
+        
+        // Improve input sizes
+        document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
+            input.style.fontSize = '16px'; // Prevent zoom on iOS
+            input.style.minHeight = '44px';
+        });
+    }
+}
+
 // ==================== WORD COUNT FUNCTIONS ====================
 function loadWordCountExample() {
     const exampleText = `Halo dunia! Ini adalah contoh analisis word count
@@ -155,53 +189,101 @@ function processWordCount() {
     const textInput = document.getElementById('textInput');
     if (!textInput) return;
 
-    const text = textInput.value;
-    const lines = text.split('\n').filter(line => line.trim());
+    const text = textInput.value.trim();
+    
+    if (text.length === 0) {
+        alert('Masukkan teks terlebih dahulu atau upload file!');
+        return;
+    }
 
+    processWordCountWithFile(text);
+}
+
+function processWordCountWithFile(text) {
+    const lines = text.split('\n').filter(line => line.trim());
+    
     if (lines.length === 0) {
-        alert('Masukkan teks terlebih dahulu!');
+        alert('Tidak ada teks yang dapat diproses! File mungkin kosong atau format tidak didukung.');
         return;
     }
 
     const processBtn = document.getElementById('processBtn');
     const originalText = showLoading(processBtn);
 
-    // Simulate processing delay
+    // Show processing indicator
+    const fileContent = document.getElementById('fileContentWordCount');
+    if (fileContent) {
+        fileContent.innerHTML += '<div style="margin-top: 10px; color: #48bb78;"><i class="fas fa-cog fa-spin"></i> Memproses teks dengan MapReduce...</div>';
+    }
+
     setTimeout(() => {
-        // MapReduce functions for word count
-        function wordMapper(line, lineNum) {
-            const words = line.toLowerCase().match(/\b\w+\b/g) || [];
-            return words.map(word => [word, 1]);
+        try {
+            function wordMapper(line, lineNum) {
+                // Enhanced word extraction with better Unicode support
+                const words = line.toLowerCase()
+                    .match(/[\p{L}\p{M}]+/gu) || []; // Unicode letters and marks
+                return words.map(word => [word, 1]);
+            }
+
+            function wordReducer(key, values) {
+                return values.reduce((sum, val) => sum + val, 0);
+            }
+
+            const result = MapReduceEngine.mapReduce(lines, wordMapper, wordReducer);
+            
+            // Calculate additional statistics
+            const totalWords = result.results.reduce((sum, [_, count]) => sum + count, 0);
+            const uniqueWords = result.results.length;
+            const avgWordLength = totalWords > 0 ? 
+                result.results.reduce((sum, [word, count]) => sum + (word.length * count), 0) / totalWords : 0;
+            
+            console.log('📊 Word Count statistics:', {
+                totalWords,
+                uniqueWords,
+                avgWordLength: avgWordLength.toFixed(2),
+                topWords: result.results.sort((a, b) => b[1] - a[1]).slice(0, 5)
+            });
+            
+            displayWordCountResults(result);
+            displayProcessSteps(result, 'mapResults', 'shuffleResults', 'reduceResults');
+            createWordCountChart(result.results);
+            
+            showSection('resultsSection');
+            showSection('processSteps');
+            hideSection('initialState');
+            hideLoading(processBtn, originalText);
+            
+            // Auto-expand process phases
+            setTimeout(() => {
+                togglePhase('mapPhase');
+                setTimeout(() => togglePhase('shufflePhase'), 200);
+                setTimeout(() => togglePhase('reducePhase'), 400);
+            }, 100);
+            
+        } catch (error) {
+            console.error('❌ Word Count processing error:', error);
+            
+            // Update file content with error
+            if (fileContent) {
+                fileContent.innerHTML += `<div style="margin-top: 10px; color: #f56565;">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Error: ${error.message}
+                </div>`;
+            }
+            
+            alert('Error memproses teks: ' + error.message);
+            hideLoading(processBtn, originalText);
         }
-
-        function wordReducer(key, values) {
-            return values.reduce((sum, val) => sum + val, 0);
-        }
-
-        // Execute MapReduce
-        const result = MapReduceEngine.mapReduce(lines, wordMapper, wordReducer);
-
-        // Display results
-        displayWordCountResults(result);
-        displayProcessSteps(result, 'mapResults', 'shuffleResults', 'reduceResults');
-        createWordCountChart(result.results);
-
-        // Show sections
-        showSection('resultsSection');
-        showSection('processSteps');
-        hideSection('initialState');
-        hideLoading(processBtn, originalText);
-
-        // Auto-expand map phase
-        setTimeout(() => togglePhase('mapPhase'), 100);
-
     }, 1000);
 }
 
+// Enhanced display function with more statistics
 function displayWordCountResults(result) {
     const totalWords = result.results.reduce((sum, [_, count]) => sum + count, 0);
     const uniqueWords = result.results.length;
-
+    const avgWordLength = totalWords > 0 ? 
+        result.results.reduce((sum, [word, count]) => sum + (word.length * count), 0) / totalWords : 0;
+    
     const summary = document.getElementById('summary');
     if (summary) {
         summary.innerHTML = `
@@ -213,46 +295,68 @@ function displayWordCountResults(result) {
                 <div class="stat-value">${uniqueWords}</div>
                 <div class="stat-label">Kata Unik</div>
             </div>
+            <div class="stat-item">
+                <div class="stat-value">${avgWordLength.toFixed(1)}</div>
+                <div class="stat-label">Rata-rata Huruf</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">${result.mapped.length}</div>
+                <div class="stat-label">Map Operations</div>
+            </div>
         `;
     }
-
+    
     const tbody = document.querySelector('#resultsTable tbody');
     if (tbody) {
         tbody.innerHTML = '';
-
+        
         // Sort by frequency descending and take top 20
-        result.results
+        const topWords = result.results
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 20)
-            .forEach(([word, count]) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <span class="word-text">${word}</span>
-                    </td>
-                    <td>
-                        <span class="count-badge">${count}</span>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+            .slice(0, 20);
+        
+        topWords.forEach(([word, count], index) => {
+            const percentage = ((count / totalWords) * 100).toFixed(1);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <span class="word-text">${word}</span>
+                </td>
+                <td>
+                    <span class="count-badge">${count}</span>
+                    <small style="color: #6c757d; margin-left: 8px;">${percentage}%</small>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+        // Add message if no words found
+        if (topWords.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td colspan="2" style="text-align: center; color: #6c757d; padding: 20px;">
+                    <i class="fas fa-info-circle"></i> Tidak ada kata yang ditemukan
+                </td>
+            `;
+            tbody.appendChild(row);
+        }
     }
 }
 
 function createWordCountChart(results) {
     const ctx = document.getElementById('wordChart');
     if (!ctx) return;
-
+    
     // Destroy previous chart if exists
     if (window.wordChartInstance) {
         window.wordChartInstance.destroy();
     }
-
+    
     // Get top 8 words
     const topWords = results
         .sort((a, b) => b[1] - a[1])
         .slice(0, 8);
-
+    
     window.wordChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -312,13 +416,492 @@ function createWordCountChart(results) {
     });
 }
 
+// ==================== WORD COUNT FILE UPLOAD FUNCTIONS ====================
+
+function initWordCountFileUpload() {
+    console.log('📝 Initializing Word Count file upload...');
+    
+    const fileInput = document.getElementById('fileInputWordCount');
+    const uploadArea = document.getElementById('uploadAreaWordCount');
+    const fileInfo = document.getElementById('fileInfoWordCount');
+    const fileName = document.getElementById('fileNameWordCount');
+    const fileSize = document.getElementById('fileSizeWordCount');
+    const fileContent = document.getElementById('fileContentWordCount');
+    const textInput = document.getElementById('textInput');
+    const uploadBtn = uploadArea?.querySelector('.file-upload-btn');
+
+    if (!fileInput || !uploadArea) {
+        console.error('❌ Word Count upload elements not found');
+        return;
+    }
+
+    // Enhanced file input for mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+        fileInput.classList.add('file-input-mobile');
+    }
+
+    // Click on upload button
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('📁 Word Count upload button clicked');
+            fileInput.click();
+        });
+        
+        // Enhanced mobile button styling
+        if (isMobile) {
+            uploadBtn.style.padding = '15px 25px';
+            uploadBtn.style.fontSize = '1.1rem';
+            uploadBtn.style.fontWeight = '600';
+        }
+    }
+
+    // Click on upload area
+    uploadArea.addEventListener('click', function(e) {
+        if (isMobile || (e.target !== uploadBtn && !uploadBtn?.contains(e.target))) {
+            console.log('📁 Word Count upload area clicked');
+            fileInput.click();
+        }
+    });
+
+    // File input change event
+    fileInput.addEventListener('change', function(e) {
+        console.log('📄 Word Count file selected:', e.target.files[0]?.name);
+        if (e.target.files.length > 0) {
+            handleWordCountFileSelection(e.target.files[0]);
+        } else {
+            console.log('❌ No file selected or selection cancelled');
+        }
+    });
+
+    // Drag and drop functionality
+    if (!isMobile) {
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.add('dragover');
+            console.log('📦 File dragged over Word Count area');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.remove('dragover');
+            console.log('📦 File dragged out of Word Count area');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.classList.remove('dragover');
+            console.log('📦 File dropped on Word Count area');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleWordCountFileSelection(files[0]);
+            }
+        });
+    }
+
+    function handleWordCountFileSelection(file) {
+        console.log('🔄 Handling Word Count file:', file.name);
+        
+        // File validation
+        if (!isSupportedWordCountFile(file)) {
+            alert('❌ Format file tidak didukung! Gunakan file TXT, DOC, DOCX, PDF, atau HTML.');
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            alert('❌ File terlalu besar! Maksimal 10MB.');
+            return;
+        }
+
+        if (file.size === 0) {
+            alert('❌ File kosong!');
+            return;
+        }
+
+        // Show file info
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.style.display = 'block';
+
+        // Show loading
+        fileContent.innerHTML = '<div style="text-align: center; color: #667eea; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Membaca dan memproses file...</div>';
+
+        // Read and process file
+        readWordCountFile(file).then(content => {
+            if (content && content.trim()) {
+                // Show preview (first 300 characters)
+                const preview = content.length > 300 ? content.substring(0, 300) + '...' : content;
+                fileContent.textContent = preview;
+                
+                // Fill textarea with content
+                if (textInput) {
+                    textInput.value = content;
+                    
+                    // Auto-resize textarea
+                    textInput.style.height = 'auto';
+                    textInput.style.height = Math.min(textInput.scrollHeight, 400) + 'px';
+                    
+                    console.log('✅ Word Count textarea filled with file content');
+                    
+                    // Auto-process if content is not too large
+                    if (content.length < 10000) {
+                        console.log('🔄 Auto-processing Word Count...');
+                        setTimeout(() => {
+                            processWordCount();
+                        }, 1000);
+                    } else {
+                        console.log('ℹ️ File besar, menunggu proses manual...');
+                        fileContent.innerHTML += '<div style="margin-top: 10px; color: #667eea;"><i class="fas fa-info-circle"></i> File berhasil dimuat. Klik "Proses MapReduce" untuk memulai analisis.</div>';
+                    }
+                }
+            } else {
+                fileContent.textContent = 'File kosong atau tidak bisa dibaca';
+                alert('❌ File kosong atau tidak bisa dibaca!');
+            }
+        }).catch(error => {
+            console.error('❌ Error processing Word Count file:', error);
+            fileContent.textContent = 'Error: ' + error.message;
+            alert('❌ Gagal memproses file: ' + error.message);
+        });
+    }
+}
+
+function isSupportedWordCountFile(file) {
+    const supportedExtensions = ['.txt', '.doc', '.docx', '.pdf', '.html', '.htm', '.rtf'];
+    const supportedTypes = [
+        'text/plain',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/pdf',
+        'text/html',
+        'application/rtf',
+        'text/rtf'
+    ];
+    
+    const extension = '.' + file.name.split('.').pop().toLowerCase();
+    const isSupported = supportedExtensions.includes(extension) || supportedTypes.includes(file.type);
+    
+    console.log('📋 File check:', {
+        name: file.name,
+        extension: extension,
+        type: file.type,
+        supported: isSupported
+    });
+    
+    return isSupported;
+}
+
+async function readWordCountFile(file) {
+    return new Promise((resolve, reject) => {
+        const extension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        console.log('📖 Reading Word Count file with extension:', extension);
+        
+        switch (extension) {
+            case '.txt':
+            case '.html':
+            case '.htm':
+            case '.rtf':
+                readTextFile(file, resolve, reject);
+                break;
+            case '.pdf':
+                readPDFFile(file, resolve, reject);
+                break;
+            case '.doc':
+            case '.docx':
+                readWordFile(file, resolve, reject);
+                break;
+            default:
+                reject(new Error('Format file tidak didukung: ' + extension));
+        }
+    });
+}
+
+function readTextFile(file, resolve, reject) {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        console.log('✅ Text file read successfully');
+        resolve(e.target.result);
+    };
+    
+    reader.onerror = function(e) {
+        console.error('❌ Error reading text file:', e);
+        reject(new Error('Gagal membaca file teks'));
+    };
+    
+    reader.onabort = function() {
+        reject(new Error('Pembacaan file dibatalkan'));
+    };
+    
+    try {
+        reader.readAsText(file, 'UTF-8');
+    } catch (error) {
+        reject(new Error('Tidak bisa membaca file: ' + error.message));
+    }
+}
+
+function readPDFFile(file, resolve, reject) {
+    console.log('📚 Processing PDF file...');
+    
+    // Check if PDF.js is available
+    if (typeof pdfjsLib === 'undefined') {
+        console.log('📥 PDF.js not loaded, loading dynamically...');
+        
+        // Create script element
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
+        
+        script.onload = function() {
+            console.log('✅ PDF.js loaded successfully');
+            // Set worker path
+            try {
+                if (pdfjsLib.GlobalWorkerOptions) {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not set PDF.js worker path:', error);
+            }
+            parsePDFFile(file, resolve, reject);
+        };
+        
+        script.onerror = function(error) {
+            console.error('❌ Failed to load PDF.js:', error);
+            reject(new Error('Gagal memuat PDF processor. Silakan refresh halaman.'));
+        };
+        
+        document.head.appendChild(script);
+    } else {
+        console.log('✅ PDF.js already available');
+        parsePDFFile(file, resolve, reject);
+    }
+}
+
+async function parsePDFFile(file, resolve, reject) {
+    try {
+        console.log('🔍 Parsing PDF file...');
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        
+        console.log(`📄 PDF has ${pdf.numPages} pages`);
+        let fullText = '';
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+            console.log(`📖 Reading PDF page ${i}...`);
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + '\n';
+            
+            // Show progress for large PDFs
+            if (pdf.numPages > 5 && i % 5 === 0) {
+                const fileContent = document.getElementById('fileContentWordCount');
+                if (fileContent) {
+                    fileContent.innerHTML = `<div style="text-align: center; color: #667eea;">
+                        <i class="fas fa-spinner fa-spin"></i> 
+                        Membaca halaman ${i} dari ${pdf.numPages}...
+                    </div>`;
+                }
+            }
+        }
+        
+        console.log('✅ PDF parsing completed');
+        resolve(fullText.trim());
+    } catch (error) {
+        console.error('❌ PDF parsing error:', error);
+        reject(new Error('Gagal membaca file PDF: ' + error.message));
+    }
+}
+
+function readWordFile(file, resolve, reject) {
+    console.log('📝 Processing Word file:', file.name);
+    
+    if (file.name.toLowerCase().endsWith('.docx')) {
+        readDOCXFile(file, resolve, reject);
+    } else {
+        // For .doc files, provide basic text extraction
+        readLegacyDOCFile(file, resolve, reject);
+    }
+}
+
+function readDOCXFile(file, resolve, reject) {
+    console.log('📘 Processing DOCX file...');
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const arrayBuffer = e.target.result;
+            const text = extractTextFromDOCX(arrayBuffer);
+            
+            if (text && text.trim()) {
+                console.log('✅ DOCX file processed successfully');
+                resolve(text.trim());
+            } else {
+                console.warn('⚠️ DOCX extraction returned empty text');
+                resolve('File DOCX berhasil dibuka tetapi teks tidak dapat diekstrak. Coba format PDF atau TXT untuk hasil terbaik.');
+            }
+        } catch (error) {
+            console.error('❌ DOCX processing error:', error);
+            reject(new Error('Gagal membaca file DOCX: ' + error.message));
+        }
+    };
+    
+    reader.onerror = function() {
+        reject(new Error('Gagal membaca file DOCX'));
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
+
+function readLegacyDOCFile(file, resolve, reject) {
+    console.log('📗 Processing legacy DOC file...');
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const arrayBuffer = e.target.result;
+            const text = extractTextFromLegacyDOC(arrayBuffer);
+            
+            if (text && text.trim()) {
+                console.log('✅ Legacy DOC file processed with basic extraction');
+                resolve(text.trim());
+            } else {
+                console.warn('⚠️ Legacy DOC extraction returned empty text');
+                resolve('File DOC terdeteksi. Untuk hasil terbaik, konversi ke format DOCX atau PDF. Teks mungkin tidak terbaca sempurna.');
+            }
+        } catch (error) {
+            console.error('❌ Legacy DOC processing error:', error);
+            reject(new Error('File DOC kompleks. Konversi ke DOCX atau PDF untuk hasil terbaik.'));
+        }
+    };
+    
+    reader.onerror = function() {
+        reject(new Error('Gagal membaca file DOC'));
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
+
+function extractTextFromDOCX(arrayBuffer) {
+    try {
+        console.log('🔧 Extracting text from DOCX...');
+        const data = new Uint8Array(arrayBuffer);
+        
+        // Simple text extraction from DOCX (ZIP file with XML)
+        // Look for text in the main document part
+        const decoder = new TextDecoder('utf-8');
+        const str = decoder.decode(data);
+        
+        // Enhanced text extraction for DOCX
+        let text = '';
+        
+        // Method 1: Extract text between <w:t> tags (WordProcessingML)
+        const textMatches = str.match(/<w:t[^>]*>([^<]*)<\/w:t>/g);
+        if (textMatches) {
+            text = textMatches.map(match => {
+                return match.replace(/<w:t[^>]*>|<\/w:t>/g, '');
+            }).join(' ').trim();
+        }
+        
+        // Method 2: Fallback - extract any readable text
+        if (!text) {
+            const fallbackMatches = str.match(/[a-zA-Z0-9\s.,!?;:(){}\[\]'"-]{10,}/g);
+            if (fallbackMatches) {
+                text = fallbackMatches.join(' ').trim();
+            }
+        }
+        
+        console.log('📊 DOCX text extraction result:', {
+            foundText: !!text,
+            textLength: text ? text.length : 0,
+            preview: text ? text.substring(0, 100) + '...' : 'empty'
+        });
+        
+        return text;
+    } catch (error) {
+        console.error('❌ DOCX extraction error:', error);
+        return null;
+    }
+}
+
+function extractTextFromLegacyDOC(arrayBuffer) {
+    try {
+        console.log('🔧 Extracting text from legacy DOC...');
+        const data = new Uint8Array(arrayBuffer);
+        const decoder = new TextDecoder('iso-8859-1');
+        const text = decoder.decode(data);
+        
+        // Enhanced text extraction for legacy DOC
+        let extractedText = '';
+        
+        // Method 1: Look for readable text sequences
+        const readableSequences = text.match(/[a-zA-Z0-9\s.,!?;:(){}\[\]'"-]{20,}/g);
+        if (readableSequences) {
+            extractedText = readableSequences
+                .filter(seq => {
+                    // Filter out binary data and keep mostly text
+                    const wordCount = (seq.match(/[a-zA-Z]{3,}/g) || []).length;
+                    return wordCount > 2;
+                })
+                .join(' ')
+                .trim();
+        }
+        
+        // Method 2: Remove non-printable characters and get remaining text
+        if (!extractedText) {
+            const cleanText = text.replace(/[^\x20-\x7E\n\r]/g, ' ');
+            const paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 10);
+            if (paragraphs.length > 0) {
+                extractedText = paragraphs.join('\n\n').trim();
+            }
+        }
+        
+        console.log('📊 Legacy DOC text extraction result:', {
+            foundText: !!extractedText,
+            textLength: extractedText ? extractedText.length : 0,
+            preview: extractedText ? extractedText.substring(0, 100) + '...' : 'empty'
+        });
+        
+        return extractedText;
+    } catch (error) {
+        console.error('❌ Legacy DOC extraction error:', error);
+        return null;
+    }
+}
+
+function clearUploadedFileWordCount() {
+    console.log('🗑️ Clearing Word Count uploaded file...');
+    
+    const fileInput = document.getElementById('fileInputWordCount');
+    const fileInfo = document.getElementById('fileInfoWordCount');
+    const textInput = document.getElementById('textInput');
+    
+    fileInput.value = '';
+    if (fileInfo) {
+        fileInfo.style.display = 'none';
+    }
+    if (textInput) {
+        textInput.value = '';
+        textInput.style.height = 'auto';
+    }
+    
+    console.log('✅ Word Count file cleared');
+}
+
 // ==================== AVERAGE CALCULATOR FUNCTIONS ====================
 let numbers = [];
 let averageChart = null;
 
 function initAverageMethods() {
     document.querySelectorAll('.method-card').forEach(card => {
-        card.addEventListener('click', function () {
+        card.addEventListener('click', function() {
             document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
             this.classList.add('active');
         });
@@ -330,7 +913,7 @@ function addNumber() {
     if (!input) return;
 
     const value = parseFloat(input.value);
-
+    
     if (!isNaN(value)) {
         numbers.push(value);
         updateNumbersList();
@@ -342,9 +925,9 @@ function addNumber() {
 function updateNumbersList() {
     const list = document.getElementById('numbersList');
     if (!list) return;
-
+    
     list.innerHTML = '';
-
+    
     numbers.forEach((num, index) => {
         const numberItem = document.createElement('div');
         numberItem.className = 'number-item';
@@ -369,7 +952,7 @@ function processTextData() {
 
     const text = textData.value;
     const lines = text.split('\n').filter(line => line.trim());
-
+    
     if (lines.length === 0) {
         alert('Masukkan data terlebih dahulu!');
         return;
@@ -409,38 +992,38 @@ function processNumbers(data) {
 
         // Execute MapReduce
         const result = MapReduceEngine.mapReduce(data, averageMapper, averageReducer);
-
+        
         // Calculate results
         const sum = result.results.find(([key]) => key === 'sum')[1];
         const count = result.results.find(([key]) => key === 'count')[1];
         const average = sum / count;
-
+        
         // Find min and max
         const min = Math.min(...data);
         const max = Math.max(...data);
         const range = max - min;
-
+        
         // Display results
         displayAverageResults(sum, count, average, min, max, range, data);
         displayProcessSteps(result, 'mapResults', 'shuffleResults', 'reduceResults');
         createAverageChart(data);
-
+        
         // Show sections
         showSection('resultsSection');
         showSection('processSteps');
         hideSection('initialState');
         hideLoading(processBtn, originalText);
-
+        
         // Auto-expand map phase
         setTimeout(() => togglePhase('mapPhase'), 100);
-
+        
     }, 800);
 }
 
 function displayAverageResults(sum, count, average, min, max, range, data) {
     const resultsGrid = document.getElementById('resultsGrid');
     const statsList = document.getElementById('statsList');
-
+    
     if (resultsGrid) {
         resultsGrid.innerHTML = `
             <div class="result-item">
@@ -469,17 +1052,17 @@ function displayAverageResults(sum, count, average, min, max, range, data) {
             </div>
         `;
     }
-
+    
     if (statsList) {
         // Calculate additional statistics
         const sortedData = [...data].sort((a, b) => a - b);
-        const median = sortedData.length % 2 === 0
-            ? (sortedData[sortedData.length / 2 - 1] + sortedData[sortedData.length / 2]) / 2
-            : sortedData[Math.floor(sortedData.length / 2)];
-
+        const median = sortedData.length % 2 === 0 
+            ? (sortedData[sortedData.length/2 - 1] + sortedData[sortedData.length/2]) / 2
+            : sortedData[Math.floor(sortedData.length/2)];
+        
         const variance = data.reduce((acc, val) => acc + Math.pow(val - average, 2), 0) / data.length;
         const stdDev = Math.sqrt(variance);
-
+        
         statsList.innerHTML = `
             <div class="stat-detail">
                 <span class="stat-name">Median</span>
@@ -504,31 +1087,31 @@ function displayAverageResults(sum, count, average, min, max, range, data) {
 function createAverageChart(data) {
     const ctx = document.getElementById('dataChart');
     if (!ctx) return;
-
+    
     // Destroy previous chart if exists
     if (averageChart) {
         averageChart.destroy();
     }
-
+    
     // Create histogram data
     const min = Math.min(...data);
     const max = Math.max(...data);
     const range = max - min;
     const binCount = Math.min(10, data.length);
     const binSize = range / binCount;
-
+    
     const histogram = Array(binCount).fill(0);
     data.forEach(value => {
         const binIndex = Math.min(Math.floor((value - min) / binSize), binCount - 1);
         histogram[binIndex]++;
     });
-
-    const labels = Array.from({ length: binCount }, (_, i) => {
+    
+    const labels = Array.from({length: binCount}, (_, i) => {
         const start = min + i * binSize;
         const end = min + (i + 1) * binSize;
         return `${start.toFixed(1)} - ${end.toFixed(1)}`;
     });
-
+    
     averageChart = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -596,7 +1179,7 @@ function processSalesData() {
 
     const text = salesData.value;
     const lines = text.split('\n').filter(line => line.trim());
-
+    
     if (lines.length === 0) {
         alert('Masukkan data penjualan terlebih dahulu!');
         return;
@@ -628,11 +1211,11 @@ function processSalesData() {
             processSalesByProduct(sales);
             processSalesByRegion(sales);
             processSalesSummary(sales);
-
+            
             hideLoading(processBtn, originalText);
             showSection('salesResults');
             hideSection('salesEmptyState');
-
+            
         } catch (error) {
             alert('Error memproses data: ' + error.message);
             hideLoading(processBtn, originalText);
@@ -675,7 +1258,7 @@ function processSalesSummary(sales) {
     const totalQuantity = sales.reduce((sum, sale) => sum + sale.quantity, 0);
     const uniqueProducts = [...new Set(sales.map(sale => sale.product))].length;
     const uniqueRegions = [...new Set(sales.map(sale => sale.region))].length;
-
+    
     displaySalesSummary(totalSales, totalQuantity, uniqueProducts, uniqueRegions);
 }
 
@@ -707,10 +1290,10 @@ function displayProductSales(productSales) {
     const tableBody = document.querySelector('#productsTable tbody');
     if (tableBody) {
         tableBody.innerHTML = '';
-
+        
         const sortedProducts = productSales.sort((a, b) => b[1] - a[1]).slice(0, 10);
         const maxSales = sortedProducts[0]?.[1] || 1;
-
+        
         sortedProducts.forEach(([product, total], index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -734,9 +1317,9 @@ function displayRegionSales(regionSales) {
     const regionsGrid = document.getElementById('regionsGrid');
     if (regionsGrid) {
         regionsGrid.innerHTML = '';
-
+        
         const totalSales = regionSales.reduce((sum, [_, total]) => sum + total, 0);
-
+        
         regionSales
             .sort((a, b) => b[1] - a[1])
             .forEach(([region, total]) => {
@@ -766,14 +1349,14 @@ function displayRegionSales(regionSales) {
 function createProductChart(productSales) {
     const ctx = document.getElementById('productChart');
     if (!ctx) return;
-
+    
     // Destroy previous chart if exists
     if (window.productChartInstance) {
         window.productChartInstance.destroy();
     }
-
+    
     const sortedProducts = productSales.sort((a, b) => b[1] - a[1]).slice(0, 8);
-
+    
     window.productChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'bar',
         data: {
@@ -810,7 +1393,7 @@ function createProductChart(productSales) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: function (context) {
+                        label: function(context) {
                             return `Rp ${context.parsed.y.toLocaleString('id-ID')}`;
                         }
                     }
@@ -820,7 +1403,7 @@ function createProductChart(productSales) {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        callback: function (value) {
+                        callback: function(value) {
                             return 'Rp ' + value.toLocaleString('id-ID');
                         }
                     }
@@ -833,12 +1416,12 @@ function createProductChart(productSales) {
 function createRegionChart(regionSales) {
     const ctx = document.getElementById('regionChart');
     if (!ctx) return;
-
+    
     // Destroy previous chart if exists
     if (window.regionChartInstance) {
         window.regionChartInstance.destroy();
     }
-
+    
     window.regionChartInstance = new Chart(ctx.getContext('2d'), {
         type: 'doughnut',
         data: {
@@ -875,7 +1458,7 @@ function createRegionChart(regionSales) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: function (context) {
+                        label: function(context) {
                             const value = context.parsed;
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = ((value / total) * 100).toFixed(1);
@@ -1284,24 +1867,45 @@ document.addEventListener('DOMContentLoaded', function () {
     switch (currentPage) {
         case 'word-count.html':
             console.log('📝 Initializing Word Count page');
-            loadWordCountExample();
+            // Initialize file upload
+            setTimeout(() => {
+                if (typeof initWordCountFileUpload === 'function') {
+                    initWordCountFileUpload();
+                }
+                if (typeof loadWordCountExample === 'function') {
+                    loadWordCountExample();
+                }
+            }, 100);
             break;
         case 'average.html':
             console.log('🧮 Initializing Average Calculator page');
-            initAverageMethods();
+            if (typeof initAverageMethods === 'function') {
+                initAverageMethods();
+            }
             break;
         case 'sales.html':
             console.log('📊 Initializing Sales Analysis page');
-            loadSalesExample();
+            if (typeof loadSalesExample === 'function') {
+                loadSalesExample();
+            }
             break;
         case 'chat.html':
             console.log('💬 Initializing Chat Analysis page');
-            loadChatExample();
-            initChatPage(); // Single initialization function
+            if (typeof loadChatExample === 'function') {
+                loadChatExample();
+            }
+            if (typeof initChatPage === 'function') {
+                initChatPage();
+            }
             break;
         default:
             console.log('🏠 Initializing Dashboard');
         // Dashboard initialization if needed
+    }
+
+    // Apply mobile fixes
+    if (typeof applyMobileFixes === 'function') {
+        applyMobileFixes();
     }
 
     // Add keyboard shortcuts
@@ -1584,14 +2188,6 @@ function initFileUpload() {
             console.log('🔄 Switched to WhatsApp format');
         }
     }
-}
-
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 function clearUploadedFile() {

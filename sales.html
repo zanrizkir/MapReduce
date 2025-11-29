@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles/style.css">
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
@@ -22,14 +24,14 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto">
+                    <a class="nav-link active" href="sales.html">
+                        <i class="fas fa-chart-line me-1"></i>Sales
+                    </a>
                     <a class="nav-link" href="word-count.html">
                         <i class="fas fa-font me-1"></i>Word Count
                     </a>
                     <a class="nav-link" href="average.html">
                         <i class="fas fa-calculator me-1"></i>Average
-                    </a>
-                    <a class="nav-link active" href="sales.html">
-                        <i class="fas fa-chart-line me-1"></i>Sales
                     </a>
                     <a class="nav-link" href="chat.html">
                         <i class="fas fa-comments me-1"></i>Chat
@@ -55,22 +57,24 @@
                 <i class="fas fa-database me-2"></i>
                 Input Data Penjualan
             </h3>
-            
+
             <div class="input-method-selector">
-                <div class="method-tab active">
+                <div class="method-tab active" onclick="switchInputMethod('text')">
                     <i class="fas fa-table me-2"></i>
                     CSV Format
                 </div>
-                <div class="method-tab">
+                <div class="method-tab" onclick="switchInputMethod('file')">
                     <i class="fas fa-upload me-2"></i>
                     Upload File
                 </div>
             </div>
 
-            <div class="sales-data-input">
+            <!-- Text Input Section -->
+            <div id="textInputSection" class="sales-data-input">
                 <label class="form-label">Data Penjualan (Format CSV):</label>
-                <textarea class="sales-textarea" id="salesData" rows="10" placeholder="product,quantity,price,region,date&#10;Laptop,5,12000000,Jakarta,2024-01-15&#10;Smartphone,8,3500000,Bandung,2024-01-16"></textarea>
-                
+                <textarea class="sales-textarea" id="salesData" rows="10"
+                    placeholder="product,quantity,price,region,date&#10;Laptop,5,12000000,Jakarta,2024-01-15&#10;Smartphone,8,3500000,Bandung,2024-01-16"></textarea>
+
                 <div class="data-format">
                     <h5 class="format-title">
                         <i class="fas fa-info-circle me-2"></i>
@@ -82,6 +86,45 @@
                     <div class="data-hint mt-2">
                         <i class="fas fa-lightbulb me-2"></i>
                         Contoh: Laptop,5,12000000,Jakarta,2024-01-15
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div id="fileInputSection" class="sales-data-input" style="display: none;">
+                <label class="form-label">Upload File CSV:</label>
+                <div class="file-upload-area" id="fileUploadArea">
+                    <div class="file-upload-content">
+                        <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                        <h4 class="file-upload-text">Klik untuk memilih file atau seret file ke sini</h4>
+                        <p class="file-upload-hint">Format yang didukung: CSV</p>
+                        
+                    </div>
+                    <input type="file" id="salesFile" accept=".csv" class="file-input">
+                </div>
+
+                <!-- File info display -->
+                <div id="fileInfo" class="file-info" style="display: none;">
+                    <div class="file-info-header">
+                        <div class="file-name">
+                            <i class="fas fa-file-csv me-2"></i>
+                            <span id="fileName">filename.csv</span>
+                        </div>
+                        <div class="file-size" id="fileSize">0 KB</div>
+                    </div>
+                    <div class="file-content-preview" id="filePreview">
+                        <i class="fas fa-spinner fa-spin"></i> Memuat preview...
+                    </div>
+                </div>
+
+                <div class="upload-supported-formats">
+                    <div class="format-badge">
+                        <i class="fas fa-file-csv"></i>
+                        CSV
+                    </div>
+                    <div class="format-badge">
+                        <i class="fas fa-table"></i>
+                        Spreadsheet
                     </div>
                 </div>
             </div>
@@ -205,6 +248,8 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/mapreduce.js"></script>
+    <script src="js/mapreduce-engine.js"></script>
+    <script src="js/sales.js"></script>
 </body>
+
 </html>
